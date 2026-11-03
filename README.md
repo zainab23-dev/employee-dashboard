@@ -97,9 +97,8 @@ static/      CSS
 media/       User uploads (not tracked by git)
 ```
 
-## Known issue
 
-The chat module's views are not present in `account/views.py`, so the chat URLs are commented out in `account/urls.py`. Restore the views and uncomment the routes to re-enable chat.
+
 =======
 # employee-dashboard
 >>>>>>> 5fd71fd010ab83e064922432a307dd012ecad47a
