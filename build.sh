@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-# Render build script: exit on any error
 set -o errexit
 
 pip install -r requirements.txt
 python manage.py collectstatic --no-input
-python manage.py migrate --no-input
-python manage.py create_admin
+python manage.py migrate
+

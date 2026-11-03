@@ -20,7 +20,3 @@ services:
         generateValue: true
       - key: DEBUG
         value: "False"
-      - key: ADMIN_USERNAME
-        sync: false
-      - key: ADMIN_PASSWORD
-        sync: false
