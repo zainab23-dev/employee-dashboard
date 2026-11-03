@@ -1,0 +1,103 @@
+<div id="handoffAlert" style="position: fixed; bottom: 20px; right: 20px; z-index: 2000; display: none;">
+    <div style="background: white; border-left: 4px solid #8b5cf6; border-radius: 8px; padding: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 300px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h4 style="font-size: 14px; display: flex; align-items: center; gap: 5px;">
+                <i class="fas fa-exchange-alt" style="color: #8b5cf6;"></i> Handoff Request
+            </h4>
+            <button onclick="closeHandoffAlert()" style="background: none; border: none; cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="handoffContent"></div>
+    </div>
+</div>
+
+<script>
+    function checkHandoffAlerts() {
+        fetch('{% url "handoff_alert" %}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.pending_handoffs.length > 0) {
+                    showHandoffAlert(data.pending_handoffs);
+                } else if (data.my_handoffs.length > 0) {
+                    showMyHandoffAlert(data.my_handoffs);
+                }
+            });
+    }
+
+    function showHandoffAlert(handoffs) {
+        const alert = document.getElementById('handoffAlert');
+        const content = document.getElementById('handoffContent');
+        
+        let html = '';
+        handoffs.forEach(h => {
+            html += `
+                <div style="margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 6px;">
+                    <div style="font-weight: 600;">${h.task_title}</div>
+                    <div style="font-size: 12px; color: #64748b;">From: ${h.from_user}</div>
+                    <div style="font-size: 11px; margin-top: 5px;">${h.notes}</div>
+                    <div style="display: flex; gap: 5px; margin-top: 8px;">
+                        <button onclick="respondToHandoff(${h.id}, 'accept')" style="flex: 1; background: #10b981; color: white; border: none; border-radius: 4px; padding: 5px;">Accept</button>
+                        <button onclick="respondToHandoff(${h.id}, 'reject')" style="flex: 1; background: #ef4444; color: white; border: none; border-radius: 4px; padding: 5px;">Reject</button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        content.innerHTML = html;
+        alert.style.display = 'block';
+    }
+
+    function showMyHandoffAlert(handoffs) {
+        const alert = document.getElementById('handoffAlert');
+        const content = document.getElementById('handoffContent');
+        
+        let html = '';
+        handoffs.forEach(h => {
+            html += `
+                <div style="margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 6px;">
+                    <div style="font-weight: 600;">${h.task_title}</div>
+                    <div style="font-size: 12px; color: #64748b;">To: ${h.handoff_to}</div>
+                    <div style="font-size: 11px; margin-top: 5px;">${h.handoff_notes}</div>
+                    <div style="margin-top: 8px;">
+                        <span style="background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 12px; font-size: 11px;">Waiting for response</span>
+                    </div>
+                </div>
+            `;
+        });
+        
+        content.innerHTML = html;
+        alert.style.display = 'block';
+    }
+
+    function closeHandoffAlert() {
+        document.getElementById('handoffAlert').style.display = 'none';
+    }
+
+    function respondToHandoff(handoffId, action) {
+        const notes = prompt(`Enter ${action === 'accept' ? 'acceptance' : 'rejection'} notes:`);
+        if (notes !== null) {
+            fetch(`/handoffs/${handoffId}/respond/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `action=${action}&notes=${encodeURIComponent(notes)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeHandoffAlert();
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+    }
+
+    // Check every 15 seconds
+    setInterval(checkHandoffAlerts, 15000);
+    checkHandoffAlerts();
+</script>

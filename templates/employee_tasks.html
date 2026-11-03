@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Tasks | Employee</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: #f1f5f9;
+        }
+        .dashboard-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        .employee-sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            padding: 24px;
+            position: fixed;
+            height: 100vh;
+        }
+        .employee-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+        }
+        .top-bar {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2563eb;
+        }
+        .task-list {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+        }
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .task-item:last-child {
+            border-bottom: none;
+        }
+        .task-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+        .status-pending { background: #f59e0b; }
+        .status-in_progress { background: #2563eb; }
+        .status-completed { background: #10b981; }
+        .task-content {
+            flex: 1;
+        }
+        .task-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .task-meta {
+            font-size: 12px;
+            color: #64748b;
+        }
+        .btn-update {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            padding: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        {% include 'employee_sidebar.html' %}
+        
+        <main class="employee-main">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>My Tasks</h1>
+                    <p>Manage and track your assigned tasks</p>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">{{ total_tasks }}</div>
+                    <div>Total Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ pending_tasks }}</div>
+                    <div>Pending</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ in_progress_tasks }}</div>
+                    <div>In Progress</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ completed_tasks }}</div>
+                    <div>Completed</div>
+                </div>
+            </div>
+
+            <!-- Task List -->
+            <div class="task-list">
+                {% for task in tasks %}
+                <div class="task-item">
+                    <div class="task-status status-{{ task.status }}"></div>
+                    <div class="task-content">
+                        <div class="task-title">{{ task.title }}</div>
+                        <div class="task-meta">
+                            <i class="fas fa-tag"></i> {{ task.task_id }} | 
+                            <i class="fas fa-calendar"></i> Due: {{ task.due_date|date:"M d, Y" }}
+                            {% if task.is_overdue %}
+                            <span style="color: #ef4444;">(Overdue)</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <button class="btn-update" style="background: #2563eb; color: white; margin-right: 10px;" onclick="openStatusModal({{ task.id }}, '{{ task.title }}', '{{ task.status }}', {{ task.progress_percentage }})">
+                        Update
+                    </button>
+                    <a href="{% url 'task_detail' task.id %}" class="btn-update" style="background: #e2e8f0; color: #1e293b; text-decoration: none;">View</a>
+                </div>
+                {% empty %}
+                <div style="text-align: center; padding: 40px;">
+                    <i class="fas fa-check-circle fa-3x" style="color: #10b981;"></i>
+                    <p style="margin-top: 10px;">No tasks assigned yet!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Update Status Modal -->
+    <div class="modal" id="statusModal">
+        <div class="modal-content">
+            <h2>Update Task Status</h2>
+            <p id="modalTaskTitle"></p>
+            
+            <form id="statusForm">
+                {% csrf_token %}
+                <input type="hidden" name="task_id" id="taskId">
+                
+                <div style="margin: 20px 0;">
+                    <label>Status</label>
+                    <select name="status" id="taskStatus" class="filter-select" style="width: 100%;">
+                        <option value="pending">Pending</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <label>Progress (%)</label>
+                    <input type="range" name="progress" id="taskProgress" min="0" max="100" value="0" onchange="document.getElementById('progressValue').textContent = this.value + '%'">
+                    <span id="progressValue">0%</span>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <label>Comment (Optional)</label>
+                    <textarea name="comment" rows="3" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;"></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn" style="background: #e2e8f0;" onclick="closeStatusModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openStatusModal(taskId, taskTitle, currentStatus, progress) {
+            document.getElementById('taskId').value = taskId;
+            document.getElementById('modalTaskTitle').innerHTML = '<strong>' + taskTitle + '</strong>';
+            document.getElementById('taskStatus').value = currentStatus;
+            document.getElementById('taskProgress').value = progress;
+            document.getElementById('progressValue').textContent = progress + '%';
+            document.getElementById('statusModal').classList.add('active');
+        }
+        
+        function closeStatusModal() {
+            document.getElementById('statusModal').classList.remove('active');
+        }
+        
+        document.getElementById('statusForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const taskId = document.getElementById('taskId').value;
+            const formData = new FormData(this);
+            
+            fetch(`/employee/tasks/${taskId}/status/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ Task updated');
+                    location.reload();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

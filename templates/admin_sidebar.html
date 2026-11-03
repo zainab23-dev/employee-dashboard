@@ -1,0 +1,455 @@
+<!-- templates/admin_sidebar.html -->
+<aside class="admin-sidebar">
+    <div class="sidebar-header">
+        <a href="{% url 'admin_dashboard' %}" class="logo">
+            <div class="logo-icon">C</div>
+            <div class="logo-text">Consups<span>.</span></div>
+        </a>
+    </div>
+
+    <!-- Admin Profile -->
+    <div class="admin-profile">
+        <div class="profile-info">
+            <div class="profile-avatar">{{ user.first_name|first|default:user.username|first|upper|default:"A" }}</div>
+            <div class="profile-details">
+                <h4>{{ user.first_name|default:user.username|default:"Admin User" }}</h4>
+                <p><i class="fas fa-circle"></i> Administrator</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-section">
+        <h3>MAIN</h3>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="{% url 'admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'employee_management' %}" class="nav-link {% if request.resolver_match.url_name == 'employee_management' %}active{% endif %}">
+                    <i class="fas fa-users"></i>
+                    <span>Employees</span>
+                   
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'admin_tasks' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_tasks' %}active{% endif %}">
+                    <i class="fas fa-tasks"></i>
+                    <span>Tasks</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'admin_attendance' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_attendance' %}active{% endif %}">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Attendance</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'leave_requests' %}" class="nav-link {% if request.resolver_match.url_name == 'leave_requests' %}active{% endif %}">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Leave Requests</span>
+                 
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'admin_task_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_task_dashboard' %}active{% endif %}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Task Dashboard</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="nav-section">
+        <h3>PROJECTS</h3>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="{% url 'admin_project_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_project_dashboard' %}active{% endif %}">
+                    <i class="fas fa-project-diagram"></i>
+                    <span>Projects</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'team_list' %}" class="nav-link {% if request.resolver_match.url_name == 'team_list' %}active{% endif %}">
+                    <i class="fas fa-users-cog"></i>
+                    <span>Teams</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+  
+
+    <!-- MANAGEMENT SECTION -->
+    <div class="nav-section">
+        <h3>MANAGEMENT</h3>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="{% url 'manage_categories' %}" class="nav-link {% if request.resolver_match.url_name == 'manage_categories' %}active{% endif %}">
+                    <i class="fas fa-tags"></i>
+                    <span>Task Categories</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'payroll_list' %}" class="nav-link {% if request.resolver_match.url_name == 'payroll_list' %}active{% endif %}">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>Payroll</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- SYSTEM SECTION -->
+    <div class="nav-section">
+        <h3>SYSTEM</h3>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="{% url 'logout' %}" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</aside>
+<style>
+    /* Sidebar Styles - Matching Admin Theme */
+    .admin-sidebar {
+        width: 280px;
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        color: white;
+        padding: 24px;
+        position: fixed;
+        height: 100vh;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #2563EB #334155;
+        z-index: 1000;
+    }
+
+    .admin-sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .admin-sidebar::-webkit-scrollbar-track {
+        background: #334155;
+    }
+
+    .admin-sidebar::-webkit-scrollbar-thumb {
+        background: #2563EB;
+        border-radius: 3px;
+    }
+
+    .sidebar-header {
+        margin-bottom: 32px;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+    }
+
+    .logo-icon {
+        width: 40px;
+        height: 40px;
+        background: #2563EB;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: bold;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 16px -4px rgba(37, 99, 235, 0.3);
+    }
+
+    .logo:hover .logo-icon {
+        transform: scale(1.05);
+        background: #2563EB;
+        box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.5);
+    }
+
+    .logo-text {
+        color: white;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+
+    .logo-text span {
+        color: #2563EB;
+    }
+
+    /* Admin Profile */
+    .admin-profile {
+        padding: 20px 0;
+        border-bottom: 1px solid #334155;
+        margin-bottom: 20px;
+    }
+
+    .profile-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .profile-avatar {
+        width: 48px;
+        height: 48px;
+        background: #2563EB;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .profile-info:hover .profile-avatar {
+        background: #2563EB;
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    }
+
+    .profile-details h4 {
+        font-size: 14px;
+        margin-bottom: 4px;
+        color: white;
+        font-weight: 600;
+    }
+
+    .profile-details p {
+        font-size: 12px;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .profile-details i {
+        color: #22c55e;
+        font-size: 8px;
+    }
+
+    /* Navigation Sections */
+    .nav-section {
+        margin-bottom: 24px;
+    }
+
+    .nav-section h3 {
+        font-size: 11px;
+        text-transform: uppercase;
+        color: #64748b;
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+        padding-left: 16px;
+        font-weight: 600;
+    }
+
+    .nav-menu {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .nav-item {
+        margin-bottom: 4px;
+        position: relative;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        color: #94a3b8;
+        text-decoration: none;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+        position: relative;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .nav-link:hover {
+        background: rgba(37, 99, 235, 0.15);
+        color: white;
+    }
+
+    .nav-link.active {
+        background: linear-gradient(90deg, rgba(37, 99, 235, 0.2), transparent);
+        border-left: 3px solid #2563EB;
+        color: white;
+    }
+
+    .nav-link i {
+        width: 20px;
+        font-size: 18px;
+        transition: all 0.2s ease;
+    }
+
+    .nav-link:hover i {
+        color: #2563EB;
+    }
+
+    .nav-link.active i {
+        color: #2563EB;
+    }
+
+    .nav-link span {
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    /* Badge Styles */
+    .badge, .chat-badge, .requests-badge {
+        background: #2563EB;
+        color: white;
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 20px;
+        margin-left: auto;
+        min-width: 20px;
+        text-align: center;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .nav-link:hover .badge,
+    .nav-link:hover .chat-badge,
+    .nav-link:hover .requests-badge {
+        background: #2563EB;
+        transform: scale(1.05);
+    }
+
+    .requests-badge {
+        background: #2563EB;
+    }
+
+    /* Active link indicator */
+    .nav-link.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 20px;
+        background: #2563EB;
+        border-radius: 0 3px 3px 0;
+    }
+
+    /* Additional hover effects for any interactive elements */
+    .nav-item:hover .nav-link {
+        color: white;
+    }
+
+    /* Logo text hover effect */
+    .logo:hover .logo-text {
+        color: #2563EB;
+    }
+
+    .logo:hover .logo-text span {
+        color: white;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .admin-sidebar {
+            width: 80px;
+            padding: 20px 10px;
+        }
+
+        .logo-text, .profile-details, .nav-link span, .nav-section h3 {
+            display: none;
+        }
+
+        .nav-link {
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .nav-link i {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .badge, .chat-badge, .requests-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 8px;
+            padding: 1px 4px;
+            min-width: 16px;
+        }
+    }
+</style>
+<!-- JavaScript for real-time badge updates -->
+<script>
+    // Function to update unread chat count
+    function updateUnreadCount() {
+        fetch('/chat/api/unread-count/')
+            .then(response => response.json())
+            .then(data => {
+                const badge = document.getElementById('chatUnreadBadge');
+                if (badge) {
+                    if (data.count > 0) {
+                        badge.textContent = data.count > 99 ? '99+' : data.count;
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            })
+            .catch(error => console.error('Error fetching unread count:', error));
+    }
+
+    // Function to update pending requests count
+    function updatePendingRequestsCount() {
+        fetch('/chat/api/pending-requests-count/')
+            .then(response => response.json())
+            .then(data => {
+                const badge = document.getElementById('pendingRequestsBadge');
+                if (badge) {
+                    if (data.count > 0) {
+                        badge.textContent = data.count > 99 ? '99+' : data.count;
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            })
+            .catch(error => console.error('Error fetching pending requests:', error));
+    }
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateUnreadCount();
+        updatePendingRequestsCount();
+        
+        // Update every 30 seconds
+        setInterval(updateUnreadCount, 30000);
+        setInterval(updatePendingRequestsCount, 30000);
+    });
+
+    // Mark chat as read when clicking on chat link
+    const chatNavLink = document.getElementById('chatNavLink');
+    if (chatNavLink) {
+        chatNavLink.addEventListener('click', function() {
+            const badge = document.getElementById('chatUnreadBadge');
+            if (badge) {
+                badge.style.display = 'none';
+            }
+        });
+    }
+</script>

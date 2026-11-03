@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Consups</title>
+    {% load static %}
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Admin Dashboard CSS -->
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Sidebar -->
+           <!-- Include Admin Sidebar -->
+        {% include 'admin_sidebar.html' %}
+
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Admin Dashboard</h1>
+                    <p>Welcome back, {{ user.first_name|default:user.username|default:"Admin" }}! Here's your company overview.</p>
+                </div>
+                <div class="admin-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Quick search...">
+                    </div>
+                    <div class="notification-icon">
+                        <i class="far fa-bell"></i>
+                        <span class="notification-badge">8</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3>Total Employees</h3>
+                        <div class="stat-number">{{ total_employees|default:"248" }}</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> +12 this month
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3>On Leave Today</h3>
+                        <div class="stat-number">16</div>
+                        <div class="stat-change negative">
+                            <i class="fas fa-arrow-down"></i> -3 from yesterday
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon success">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3>New Hires</h3>
+                        <div class="stat-number">12</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> This month
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon danger">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3>Pending Requests</h3>
+                        <div class="stat-number">24</div>
+                        <div class="stat-change">
+                            Needs review
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Activity Chart -->
+                <div class="dashboard-card" style="grid-column: span 2;">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-line"></i> Employee Activity</h2>
+                        <a href="#">View Details</a>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-bell"></i> Recent Activities</h2>
+                        <a href="#">View All</a>
+                    </div>
+                    <ul class="activity-list">
+                        <li class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">New employee Sarah Johnson joined</div>
+                                <div class="activity-time">10 minutes ago</div>
+                            </div>
+                        </li>
+                        <li class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-file-invoice"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">Payroll processed for March</div>
+                                <div class="activity-time">1 hour ago</div>
+                            </div>
+                        </li>
+                        <li class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">Leave request approved for John Doe</div>
+                                <div class="activity-time">2 hours ago</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Online Employees -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-circle"></i> Online Now</h2>
+                        <a href="#">View All</a>
+                    </div>
+                    <ul class="user-list">
+                        <li class="user-item">
+                            <div class="user-avatar">JD</div>
+                            <div class="user-info">
+                                <div class="user-name">John Doe</div>
+                                <div class="user-role">Senior Developer</div>
+                            </div>
+                            <div class="user-status"></div>
+                        </li>
+                        <li class="user-item">
+                            <div class="user-avatar">AS</div>
+                            <div class="user-info">
+                                <div class="user-name">Alice Smith</div>
+                                <div class="user-role">HR Manager</div>
+                            </div>
+                            <div class="user-status"></div>
+                        </li>
+                        <li class="user-item">
+                            <div class="user-avatar">RJ</div>
+                            <div class="user-info">
+                                <div class="user-name">Robert Johnson</div>
+                                <div class="user-role">Project Lead</div>
+                            </div>
+                            <div class="user-status offline"></div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Recent Employees - FIXED: Removed database loop that was causing error -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-user-friends"></i> Recent Hires</h2>
+                        <a href="{% url 'admin_dashboard' %}">Manage</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Department</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- STATIC DATA - No database query -->
+                                <tr>
+                                    <td>Sarah Lee</td>
+                                    <td>Engineering</td>
+                                    <td><span class="status-badge active">Active</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Mike Chen</td>
+                                    <td>Sales</td>
+                                    <td><span class="status-badge active">Active</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Lisa Wang</td>
+                                    <td>Marketing</td>
+                                    <td><span class="status-badge pending">Onboarding</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Department Distribution -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-pie"></i> Department Distribution</h2>
+                        <a href="#">Details</a>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-info">
+                            <span>Engineering</span>
+                            <span>86</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 35%;"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-info">
+                            <span>Sales</span>
+                            <span>52</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 21%; background: #f59e0b;"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-info">
+                            <span>Marketing</span>
+                            <span>38</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 15%; background: #10b981;"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-info">
+                            <span>HR</span>
+                            <span>24</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 10%; background: #8b5cf6;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pending Leave Requests -->
+             
+
+ 
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Activity Chart
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Active Employees',
+                        data: [165, 178, 182, 170, 188, 145, 132],
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#4f46e5'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

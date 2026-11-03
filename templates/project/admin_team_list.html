@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teams | Admin</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f1f5f9; }
+        .dashboard-wrapper { display: flex; }
+        .sidebar { width: 280px; background: white; height: 100vh; position: fixed; }
+        .main-content { flex: 1; margin-left: 280px; padding: 30px; }
+
+        .top-bar {
+            background: white; border-radius: 15px; padding: 20px 30px;
+            margin-bottom: 30px; display: flex; justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-primary {
+            background: #2563eb; color: white; padding: 10px 20px;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        }
+
+        .teams-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+        }
+        .team-card {
+            background: white; border-radius: 15px; padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.3s;
+            cursor: pointer;
+        }
+        .team-card:hover {
+            transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .team-header {
+            display: flex; justify-content: space-between; margin-bottom: 15px;
+        }
+        .team-name {
+            font-size: 18px; font-weight: 600; color: #1e293b;
+        }
+        .member-count {
+            background: #e2e8f0; padding: 4px 10px;
+            border-radius: 20px; font-size: 12px;
+        }
+        .leader-info {
+            background: #f8fafc; padding: 10px; border-radius: 8px;
+            margin: 10px 0; display: flex; align-items: center; gap: 10px;
+        }
+        .leader-avatar {
+            width: 30px; height: 30px; background: #2563eb; color: white;
+            border-radius: 6px; display: flex; align-items: center;
+            justify-content: center; font-weight: 600;
+        }
+        .project-count {
+            margin-top: 10px; font-size: 13px; color: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        {% include 'admin_sidebar.html' %}
+        
+        <div class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 style="font-size: 24px;">Teams</h1>
+                    <p style="color: #64748b;">Manage your teams</p>
+                </div>
+                <a href="{% url 'create_team' %}" class="btn-primary">
+                    <i class="fas fa-plus"></i> New Team
+                </a>
+            </div>
+            
+            <div class="teams-grid">
+                {% for team in teams %}
+                <div class="team-card" onclick="location.href='{% url 'team_detail' team.id %}'">
+                    <div class="team-header">
+                        <span class="team-name">{{ team.name }}</span>
+                        <span class="member-count">
+                            <i class="fas fa-user"></i> {{ team.member_count }}
+                        </span>
+                    </div>
+                    
+                    <p style="color: #64748b; font-size: 13px;">{{ team.description|truncatechars:80 }}</p>
+                    
+                    {% if team.team_leader %}
+                    <div class="leader-info">
+                        <div class="leader-avatar">{{ team.team_leader.username|first|upper }}</div>
+                        <div>
+                            <div style="font-weight: 500;">{{ team.team_leader.username }}</div>
+                            <div style="font-size: 11px; color: #64748b;">Team Leader</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p style="color: #f59e0b; font-size: 12px;">No leader assigned</p>
+                    {% endif %}
+                    
+                    <div class="project-count">
+                        <i class="fas fa-project-diagram"></i> {{ team.projects_count }} projects
+                    </div>
+                </div>
+                {% empty %}
+                <div style="grid-column: span 3; text-align: center; padding: 60px;">
+                    <i class="fas fa-users fa-4x" style="color: #94a3b8;"></i>
+                    <p style="margin-top: 15px;">No teams found</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

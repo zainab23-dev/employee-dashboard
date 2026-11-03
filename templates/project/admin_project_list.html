@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects | Admin</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f1f5f9; }
+        .dashboard-wrapper { display: flex; }
+        .sidebar { width: 280px; background: white; height: 100vh; position: fixed; }
+        .main-content { flex: 1; margin-left: 280px; padding: 30px; }
+        
+        .top-bar {
+            background: white; border-radius: 15px; padding: 20px 30px;
+            margin-bottom: 30px; display: flex; justify-content: space-between;
+            align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        
+        .btn-primary {
+            background: #2563eb; color: white; padding: 10px 20px;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        }
+        
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white; border-radius: 12px; padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .filters {
+            background: white; border-radius: 12px; padding: 20px;
+            margin-bottom: 25px; display: flex; gap: 15px;
+        }
+        
+        .projects-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+        }
+        .project-card {
+            background: white; border-radius: 15px; padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.3s;
+            border-left: 4px solid;
+        }
+        .project-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .project-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .project-code {
+            background: #e0e7ff; color: #2563eb; padding: 4px 12px;
+            border-radius: 20px; font-size: 12px; font-weight: 600;
+        }
+        .status-badge {
+            padding: 4px 12px; border-radius: 20px; font-size: 12px;
+        }
+        .status-active { background: #dbeafe; color: #1e40af; }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-planning { background: #e2e8f0; color: #475569; }
+        .progress-bar {
+            height: 6px; background: #e2e8f0; border-radius: 3px; margin: 15px 0;
+        }
+        .progress-fill {
+            height: 100%; background: #2563eb; border-radius: 3px;
+        }
+        .view-btn {
+            display: inline-block; background: #2563eb; color: white;
+            padding: 8px 16px; border-radius: 6px; text-decoration: none;
+            font-size: 13px; margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        {% include 'admin_sidebar.html' %}
+        
+        <div class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 style="font-size: 24px;">Projects</h1>
+                    <p style="color: #64748b;">Manage all projects</p>
+                </div>
+                <a href="{% url 'admin_create_project' %}" class="btn-primary">
+                    <i class="fas fa-plus"></i> New Project
+                </a>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 style="font-size: 28px;">{{ total_projects }}</h3>
+                    <p style="color: #64748b;">Total Projects</p>
+                </div>
+                <div class="stat-card">
+                    <h3 style="font-size: 28px;">{{ active_projects }}</h3>
+                    <p style="color: #64748b;">Active Projects</p>
+                </div>
+                <div class="stat-card">
+                    <h3 style="font-size: 28px;">{{ completed_projects }}</h3>
+                    <p style="color: #64748b;">Completed</p>
+                </div>
+            </div>
+            
+            <div class="filters">
+                <select id="statusFilter" onchange="applyFilters()">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="planning">Planning</option>
+                    <option value="completed">Completed</option>
+                </select>
+                <select id="priorityFilter" onchange="applyFilters()">
+                    <option value="">All Priority</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                </select>
+            </div>
+            
+            <div class="projects-grid">
+                {% for project in projects %}
+                <div class="project-card" style="border-left-color: 
+                    {% if project.priority == 'high' %}#ef4444
+                    {% elif project.priority == 'medium' %}#f59e0b
+                    {% else %}#10b981{% endif %};">
+                    <div class="project-header">
+                        <span class="project-code">{{ project.project_code }}</span>
+                        <span class="status-badge status-{{ project.status }}">
+                            {{ project.get_status_display }}
+                        </span>
+                    </div>
+                    <h3 style="font-size: 18px; margin-bottom: 10px;">{{ project.title }}</h3>
+                    <p style="color: #64748b; font-size: 13px; margin-bottom: 10px;">
+                        Team: {{ project.team.name }} • Leader: {{ project.team_leader.username }}
+                    </p>
+                    <div style="display: flex; gap: 15px; font-size: 12px; color: #64748b; margin-bottom: 10px;">
+                        <span><i class="far fa-calendar"></i> {{ project.end_date|date:"d M" }}</span>
+                        <span><i class="fas fa-tasks"></i> {{ project.tasks.count }} tasks</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ project.progress }}%;"></div>
+                    </div>
+                    <a href="{% url 'admin_project_detail' project.project_code %}" class="view-btn">
+                        View Details <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                {% empty %}
+                <div style="grid-column: span 3; text-align: center; padding: 60px;">
+                    <i class="fas fa-folder-open fa-4x" style="color: #94a3b8;"></i>
+                    <p style="margin-top: 15px;">No projects found</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function applyFilters() {
+            const status = document.getElementById('statusFilter').value;
+            const priority = document.getElementById('priorityFilter').value;
+            
+            let url = new URL(window.location.href);
+            if (status) url.searchParams.set('status', status);
+            else url.searchParams.delete('status');
+            if (priority) url.searchParams.set('priority', priority);
+            else url.searchParams.delete('priority');
+            
+            window.location.href = url.toString();
+        }
+    </script>
+</body>
+</html>

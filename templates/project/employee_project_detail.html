@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ project.title }} | My Project</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f1f5f9; }
+        .dashboard-wrapper { display: flex; }
+        .sidebar { width: 280px; background: white; height: 100vh; position: fixed; }
+        .main-content { flex: 1; margin-left: 280px; padding: 30px; }
+
+        .top-bar {
+            background: white; border-radius: 15px; padding: 20px 30px;
+            margin-bottom: 30px; display: flex; justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0; color: #1e293b; padding: 10px 20px;
+            border: none; border-radius: 8px; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+
+        .project-header {
+            background: white; border-radius: 15px; padding: 25px;
+            margin-bottom: 25px;
+        }
+        .meta-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+            margin: 20px 0; padding: 20px 0; border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .my-tasks-section {
+            background: white; border-radius: 15px; padding: 25px;
+            margin-bottom: 25px;
+        }
+        .tasks-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;
+        }
+        .task-column {
+            background: #f8fafc; border-radius: 12px; padding: 15px;
+        }
+        .task-card {
+            background: white; border: 1px solid #e2e8f0; border-radius: 8px;
+            padding: 12px; margin-bottom: 10px; cursor: pointer;
+            border-left: 3px solid;
+        }
+        .task-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+
+        .team-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+        }
+        .team-member {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px; background: #f8fafc; border-radius: 8px;
+        }
+        .member-avatar {
+            width: 35px; height: 35px; background: #2563eb; color: white;
+            border-radius: 8px; display: flex; align-items: center;
+            justify-content: center;
+        }
+
+        .nav-links {
+            display: flex; gap: 15px; margin-top: 20px;
+        }
+        .nav-link {
+            padding: 8px 16px; border-radius: 8px; text-decoration: none;
+            color: #64748b; display: flex; align-items: center; gap: 5px;
+        }
+        .nav-link.active {
+            background: #2563eb; color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        {% include 'employee_sidebar.html' %}
+        
+        <div class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 style="font-size: 24px;">{{ project.title }}</h1>
+                    <p style="color: #64748b;">{{ project.project_code }} · {{ project.get_status_display }}</p>
+                </div>
+                <a href="{% url 'employee_projects' %}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+
+            <!-- Project Header -->
+            <div class="project-header">
+                <p style="color: #64748b;">{{ project.description }}</p>
+                
+                <div class="meta-grid">
+                    <div>
+                        <div style="font-size: 12px; color: #64748b;">Start Date</div>
+                        <div style="font-size: 18px; font-weight: 600;">{{ project.start_date|date:"d M Y" }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: #64748b;">End Date</div>
+                        <div style="font-size: 18px; font-weight: 600;">{{ project.end_date|date:"d M Y" }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: #64748b;">Days Left</div>
+                        <div style="font-size: 18px; font-weight: 600;">{{ project.days_remaining }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: #64748b;">Progress</div>
+                        <div style="font-size: 18px; font-weight: 600;">{{ project.progress }}%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Tasks -->
+            <div class="my-tasks-section">
+                <h3 style="margin-bottom: 15px;"><i class="fas fa-tasks"></i> My Tasks ({{ my_tasks.count }})</h3>
+
+                <div class="tasks-grid">
+                    <!-- To Do -->
+                    <div class="task-column">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>📋 To Do</span>
+                            <span>{{ todo_tasks.count }}</span>
+                        </div>
+                        {% for task in todo_tasks %}
+                        <div class="task-card priority-{{ task.priority }}" 
+                             onclick="location.href='{% url 'employee_task_detail' task.task_code %}'">
+                            <div style="font-weight: 600;">{{ task.title }}</div>
+                            <div style="font-size: 11px; color: #64748b; margin-top: 5px;">
+                                <i class="far fa-calendar"></i> {{ task.due_date|date:"d M" }}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p style="color: #94a3b8;">No tasks</p>
+                        {% endfor %}
+                    </div>
+
+                    <!-- In Progress -->
+                    <div class="task-column">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>⚡ In Progress</span>
+                            <span>{{ in_progress_tasks.count }}</span>
+                        </div>
+                        {% for task in in_progress_tasks %}
+                        <div class="task-card priority-{{ task.priority }}" 
+                             onclick="location.href='{% url 'employee_task_detail' task.task_code %}'">
+                            <div style="font-weight: 600;">{{ task.title }}</div>
+                            <div style="font-size: 11px; color: #64748b; margin-top: 5px;">
+                                <i class="far fa-calendar"></i> {{ task.due_date|date:"d M" }}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p style="color: #94a3b8;">No tasks</p>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Review -->
+                    <div class="task-column">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>👀 Review</span>
+                            <span>{{ review_tasks.count }}</span>
+                        </div>
+                        {% for task in review_tasks %}
+                        <div class="task-card priority-{{ task.priority }}" 
+                             onclick="location.href='{% url 'employee_task_detail' task.task_code %}'">
+                            <div style="font-weight: 600;">{{ task.title }}</div>
+                            <div style="font-size: 11px; color: #64748b; margin-top: 5px;">
+                                <i class="far fa-calendar"></i> {{ task.due_date|date:"d M" }}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p style="color: #94a3b8;">No tasks</p>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Completed -->
+                    <div class="task-column">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>✅ Completed</span>
+                            <span>{{ completed_tasks.count }}</span>
+                        </div>
+                        {% for task in completed_tasks %}
+                        <div class="task-card" style="opacity: 0.7;">
+                            <div style="font-weight: 600;"><s>{{ task.title }}</s></div>
+                        </div>
+                        {% empty %}
+                        <p style="color: #94a3b8;">No tasks</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Members -->
+            <div style="background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 15px;"><i class="fas fa-users"></i> Team Members</h3>
+                <div class="team-grid">
+                    {% for member in team_members %}
+                    <div class="team-member">
+                        <div class="member-avatar">{{ member.username|first|upper }}</div>
+                        <div>
+                            <div style="font-weight: 500;">{{ member.username }}</div>
+                            <div style="font-size: 11px; color: #64748b;">{{ member.email }}</div>
+                        </div>
+                        {% if member == project.team_leader %}
+                        <span style="margin-left: auto; background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 10px; font-size: 9px;">Leader</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="nav-links">
+                <a href="#" class="nav-link active">
+                    <i class="fas fa-info-circle"></i> Overview
+                </a>
+                <a href="{% url 'employee_discussion' project.project_code %}" class="nav-link">
+                    <i class="fas fa-comments"></i> Discussion
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payroll Details | {{ payroll.payroll_code }}</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f1f5f9; }
+        .dashboard-wrapper { display: flex; min-height: 100vh; }
+        .admin-main { flex: 1; margin-left: 280px; padding: 30px; }
+
+        .top-bar {
+            background: white; padding: 20px 30px; border-radius: 15px;
+            margin-bottom: 30px; display: flex; justify-content: space-between;
+            align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .page-title h1 { font-size: 24px; color: #1e293b; }
+        .page-title p { color: #64748b; font-size: 14px; margin-top: 5px; }
+
+        .btn-primary {
+            background: #2563eb; color: white; padding: 10px 20px;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-secondary {
+            background: #e2e8f0; color: #1e293b; padding: 10px 20px;
+            border: none; border-radius: 8px; font-weight: 500; cursor: pointer;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-success {
+            background: #10b981; color: white; padding: 10px 20px;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        }
+
+        /* Payroll Header */
+        .payroll-header {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white; border-radius: 15px; padding: 25px;
+            margin-bottom: 25px; display: flex; justify-content: space-between;
+            align-items: center;
+        }
+        .payroll-info h2 { font-size: 28px; margin-bottom: 5px; }
+        .payroll-info p { opacity: 0.9; }
+        .payroll-stats {
+            display: flex; gap: 30px; background: rgba(255,255,255,0.1);
+            padding: 15px 25px; border-radius: 12px;
+        }
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 24px; font-weight: 700; }
+        .stat-label { font-size: 12px; opacity: 0.8; }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+            margin-bottom: 30px;
+        }
+        .summary-card {
+            background: white; border-radius: 12px; padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .summary-title {
+            font-size: 14px; color: #64748b; margin-bottom: 10px;
+        }
+        .summary-amount {
+            font-size: 32px; font-weight: 700; color: #1e293b;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex; gap: 10px; margin-bottom: 25px;
+        }
+        .action-btn {
+            flex: 1; padding: 12px; border: none; border-radius: 8px;
+            font-weight: 600; cursor: pointer; display: flex;
+            align-items: center; justify-content: center; gap: 8px;
+        }
+
+        /* Table */
+        .table-container {
+            background: white; border-radius: 15px; padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .table-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding-bottom: 15px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        table {
+            width: 100%; border-collapse: collapse;
+        }
+        th {
+            text-align: left; padding: 12px; background: #f8fafc;
+            color: #64748b; font-weight: 600; font-size: 13px;
+        }
+        td {
+            padding: 12px; border-bottom: 1px solid #e2e8f0;
+            color: #1e293b; font-size: 14px;
+        }
+        .edit-btn {
+            background: none; border: none; color: #2563eb;
+            cursor: pointer; font-size: 12px; padding: 5px 10px;
+            border-radius: 5px; transition: all 0.2s;
+        }
+        .edit-btn:hover {
+            background: #eef2ff;
+        }
+
+        /* Modal */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white; border-radius: 15px; max-width: 600px; width: 90%;
+            max-height: 80vh; overflow-y: auto; padding: 30px;
+        }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #f1f5f9;
+        }
+        .close { font-size: 24px; cursor: pointer; color: #64748b; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label {
+            display: block; font-weight: 600; margin-bottom: 5px; color: #1e293b;
+        }
+        .form-group input {
+            width: 100%; padding: 10px; border: 1px solid #e2e8f0;
+            border-radius: 8px; font-size: 14px;
+        }
+        .form-group input:focus {
+            outline: none; border-color: #2563eb;
+        }
+        .modal-footer {
+            display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;
+        }
+        
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        /* Alert messages */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        {% include 'admin_sidebar.html' %}
+        
+        <main class="admin-main">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Payroll Details</h1>
+                    <p>{{ payroll.payroll_code }} - Period: {{ payroll.pay_period_start|date:"d M Y" }} to {{ payroll.pay_period_end|date:"d M Y" }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'payroll_list' %}" class="btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Payrolls
+                    </a>
+                </div>
+            </div>
+
+            <!-- Alert Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Payroll Header -->
+            <div class="payroll-header">
+                <div class="payroll-info">
+                    <h2>{{ payroll.payroll_code }}</h2>
+                    <p><i class="fas fa-calendar"></i> Payment Date: {{ payroll.payment_date|date:"d M Y" }}</p>
+                    <p><i class="fas fa-user"></i> Generated by: {{ payroll.generated_by.username|default:"System" }} on {{ payroll.generated_at|date:"d M Y, h:i A" }}</p>
+                </div>
+                <div class="payroll-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">{{ payroll.employee_count }}</div>
+                        <div class="stat-label">Employees</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${{ payroll.total_net_pay|floatformat:0 }}</div>
+                        <div class="stat-label">Total Net</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-title">Gross Pay</div>
+                    <div class="summary-amount">${{ payroll.total_gross_pay|floatformat:2 }}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-title">Total Deductions</div>
+                    <div class="summary-amount">${{ payroll.total_deductions|floatformat:2 }}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-title">Net Pay</div>
+                    <div class="summary-amount">${{ payroll.total_net_pay|floatformat:2 }}</div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            {% if can_submit %}
+            <div class="action-buttons">
+                <button class="action-btn btn-primary" onclick="submitForApproval()" id="submitBtn">
+                    <i class="fas fa-paper-plane"></i> Submit for CEO Approval
+                </button>
+                <a href="{% url 'add_payroll_employees' payroll.id %}" class="action-btn btn-secondary">
+                    <i class="fas fa-user-plus"></i> Add/Remove Employees
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Employees Table -->
+            <div class="table-container">
+                <div class="table-header">
+                    <h3><i class="fas fa-users" style="color: #2563eb;"></i> Employee Details</h3>
+                    <span>{{ payroll_employees.count }} employees</span>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>Basic</th>
+                            <th>Allowances</th>
+                            <th>Deductions</th>
+                            <th>Net Pay</th>
+                            {% if can_edit %}
+                            <th>Actions</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody id="employeeTableBody">
+                        {% for emp in payroll_employees %}
+                        <tr id="emp-row-{{ emp.id }}">
+                            <td>
+                                <strong>{{ emp.employee.name }}</strong><br>
+                                <small style="color: #64748b;">{{ emp.employee.employee_id }}</small>
+                            </td>
+                            <td>{{ emp.employee.department|default:"-" }}</td>
+                            <td class="basic-salary-{{ emp.id }}">${{ emp.basic_salary|floatformat:2 }}</td>
+                            <td>${{ emp.house_rent|add:emp.conveyance|add:emp.medical|add:emp.bonus|add:emp.overtime|floatformat:2 }}</td>
+                            <td class="deductions-{{ emp.id }}">${{ emp.total_deductions|floatformat:2 }}</td>
+                            <td class="net-pay-{{ emp.id }}"><strong>${{ emp.net_pay|floatformat:2 }}</strong></td>
+                            {% if can_edit %}
+                            <td>
+                                <button class="edit-btn" onclick="openEditModal({{ emp.id }})">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Edit Employee Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Employee Payroll</h2>
+                <span class="close" onclick="closeEditModal()">&times;</span>
+            </div>
+            <form id="editForm">
+                {% csrf_token %}
+                <input type="hidden" name="employee_id" id="employee_id">
+                <div class="form-group">
+                    <label>Basic Salary</label>
+                    <input type="number" name="basic_salary" id="basic_salary" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>House Rent</label>
+                    <input type="number" name="house_rent" id="house_rent" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Conveyance</label>
+                    <input type="number" name="conveyance" id="conveyance" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Medical</label>
+                    <input type="number" name="medical" id="medical" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Bonus</label>
+                    <input type="number" name="bonus" id="bonus" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Overtime</label>
+                    <input type="number" name="overtime" id="overtime" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Tax Deduction</label>
+                    <input type="number" name="tax_deduction" id="tax_deduction" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Loan Deduction</label>
+                    <input type="number" name="loan_deduction" id="loan_deduction" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Other Deductions</label>
+                    <input type="number" name="other_deductions" id="other_deductions" step="0.01" value="0">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" id="saveBtn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    let currentEmployeeId = null;
+
+    function openEditModal(empId) {
+        currentEmployeeId = empId;
+        document.getElementById('employee_id').value = empId;
+        
+        // Show loading state
+        const saveBtn = document.getElementById('saveBtn');
+        const originalBtnText = saveBtn.innerHTML;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<div class="loading-spinner"></div> Loading...';
+        
+        // Fetch employee data to populate form
+        fetch(`/payrolls/employee/${empId}/get/`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Populate form fields
+                document.getElementById('basic_salary').value = data.basic_salary || 0;
+                document.getElementById('house_rent').value = data.house_rent || 0;
+                document.getElementById('conveyance').value = data.conveyance || 0;
+                document.getElementById('medical').value = data.medical || 0;
+                document.getElementById('bonus').value = data.bonus || 0;
+                document.getElementById('overtime').value = data.overtime || 0;
+                document.getElementById('tax_deduction').value = data.tax_deduction || 0;
+                document.getElementById('loan_deduction').value = data.loan_deduction || 0;
+                document.getElementById('other_deductions').value = data.other_deductions || 0;
+                
+                // Show modal
+                document.getElementById('editModal').classList.add('active');
+            } else {
+                alert('Error loading employee data: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to load employee data. Please check your connection.');
+        })
+        .finally(() => {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalBtnText;
+        });
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').classList.remove('active');
+        currentEmployeeId = null;
+        // Reset form
+        document.getElementById('editForm').reset();
+    }
+
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!currentEmployeeId) {
+            alert('No employee selected');
+            return;
+        }
+        
+        const saveBtn = document.getElementById('saveBtn');
+        const originalText = saveBtn.innerHTML;
+        const formData = new FormData(this);
+        
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<div class="loading-spinner"></div> Saving...';
+        
+        fetch(`/payrolls/employee/${currentEmployeeId}/edit/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update the table row with new values
+                updateTableRow(currentEmployeeId, data);
+                showMessage('✅ Employee payroll updated successfully!', 'success');
+                closeEditModal();
+            } else {
+                showMessage('❌ Error: ' + (data.error || 'Failed to update'), 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('❌ Failed to update employee payroll', 'error');
+        })
+        .finally(() => {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalText;
+        });
+    });
+
+    function updateTableRow(empId, data) {
+        // Find the row
+        const row = document.querySelector(`tr:has(button[onclick="openEditModal(${empId})"])`);
+        if (row) {
+            // Update basic salary (3rd column)
+            const basicCell = row.cells[2];
+            if (basicCell) basicCell.textContent = `$${parseFloat(data.basic_salary || 0).toFixed(2)}`;
+            
+            // Update allowances (4th column)
+            const allowances = (data.house_rent || 0) + (data.conveyance || 0) + 
+                             (data.medical || 0) + (data.bonus || 0) + (data.overtime || 0);
+            const allowancesCell = row.cells[3];
+            if (allowancesCell) allowancesCell.textContent = `$${allowances.toFixed(2)}`;
+            
+            // Update deductions (5th column)
+            const deductionsCell = row.cells[4];
+            if (deductionsCell) deductionsCell.textContent = `$${parseFloat(data.total_deductions || 0).toFixed(2)}`;
+            
+            // Update net pay (6th column)
+            const netPayCell = row.cells[5];
+            if (netPayCell) netPayCell.innerHTML = `<strong>$${parseFloat(data.net_pay || 0).toFixed(2)}</strong>`;
+        }
+    }
+
+    function showMessage(message, type) {
+        // Check if message container exists, create if not
+        let messageContainer = document.getElementById('messageContainer');
+        if (!messageContainer) {
+            messageContainer = document.createElement('div');
+            messageContainer.id = 'messageContainer';
+            const summaryGrid = document.querySelector('.summary-grid');
+            if (summaryGrid) {
+                summaryGrid.parentNode.insertBefore(messageContainer, summaryGrid);
+            }
+        }
+        
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type}`;
+        alertDiv.style.cssText = `
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: ${type === 'success' ? '#d1fae5' : '#fee2e2'};
+            color: ${type === 'success' ? '#065f46' : '#991b1b'};
+            border-left: 4px solid ${type === 'success' ? '#10b981' : '#ef4444'};
+        `;
+        alertDiv.innerHTML = `
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+            ${message}
+        `;
+        
+        messageContainer.innerHTML = '';
+        messageContainer.appendChild(alertDiv);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 3000);
+    }
+
+    function submitForApproval() {
+        if (confirm('Submit this payroll for CEO approval?')) {
+            const submitBtn = document.querySelector('.action-btn.btn-primary');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="loading-spinner"></div> Submitting...';
+            
+            fetch(`/payrolls/{{ payroll.id }}/submit/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('✅ ' + (data.message || 'Payroll submitted successfully!'), 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showMessage('❌ Error: ' + (data.error || 'Failed to submit'), 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('❌ Failed to submit payroll', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
+        }
+    }
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+        const modal = document.getElementById('editModal');
+        if (e.target === modal) {
+            closeEditModal();
+        }
+    });
+    
+    // Handle ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeEditModal();
+        }
+    });
+</script>

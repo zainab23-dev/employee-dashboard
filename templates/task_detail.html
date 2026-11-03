@@ -1,0 +1,632 @@
+<!-- use for task detail page, showing all task info, comments, and history with modals for editing and adding comments. -->
+
+
+<!DOCTYPE html>           
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Details | Consups</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f1f5f9;
+        }
+
+        .dashboard-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .admin-sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            padding: 24px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title h1 {
+            font-size: 24px;
+            color: #1e293b;
+        }
+
+        .page-title p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .task-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        /* Task Details Card */
+        .task-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .task-id {
+            font-size: 14px;
+            color: #64748b;
+            background: #f8fafc;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .priority-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .priority-high { background: #fee2e2; color: #991b1b; }
+        .priority-medium { background: #fef3c7; color: #92400e; }
+        .priority-low { background: #dbeafe; color: #1e40af; }
+        .priority-urgent { background: #ef4444; color: white; }
+
+        .task-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 15px;
+        }
+
+        .task-description {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .info-value.warning {
+            color: #ef4444;
+        }
+
+        .progress-section {
+            margin: 20px 0;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #2563eb;
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+
+        /* Comments Section */
+        .comments-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-top: 20px;
+        }
+
+        .comments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .comment-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .comment-item {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .comment-user {
+            font-weight: 600;
+            color: #2563eb;
+        }
+
+        .comment-time {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .comment-text {
+            font-size: 14px;
+            color: #1e293b;
+            line-height: 1.5;
+        }
+
+        /* History Section */
+        .history-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .history-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 12px;
+            border-left: 3px solid #2563eb;
+            background: #f8fafc;
+            margin-bottom: 10px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .history-action {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .history-details {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .history-time {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-edit {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        {% include 'admin_sidebar.html' %}
+        
+        <main class="admin-main">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Task Details</h1>
+                    <p>{{ task.task_id }} - {{ task.title }}</p>
+                </div>
+                <div>
+                    <a href="javascript:history.back()" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+
+            <div class="task-container">
+                <!-- Left Column - Task Details -->
+                <div>
+                    <!-- Main Task Card -->
+                    <div class="task-card">
+                        <div class="task-header">
+                            <span class="task-id">{{ task.task_id }}</span>
+                            <span class="priority-badge priority-{{ task.priority }}">
+                                {{ task.get_priority_display }}
+                            </span>
+                        </div>
+
+                        <h1 class="task-title">{{ task.title }}</h1>
+
+                        <div class="task-description">
+                            {{ task.description|linebreaks }}
+                        </div>
+
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Assigned To</div>
+                                <div class="info-value">{{ task.assigned_to.name }}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Department</div>
+                                <div class="info-value">{{ task.assigned_to.department }}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Category</div>
+                                <div class="info-value">{{ task.category.name|default:"Uncategorized" }}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Created By</div>
+                                <div class="info-value">{{ task.created_by.user.username|default:"System" }}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Due Date</div>
+                                <div class="info-value {% if task.is_overdue %}warning{% endif %}">
+                                    {{ task.due_date|date:"M d, Y" }}
+                                    {% if task.is_overdue %}
+                                    <br><small style="color: #ef4444;">(Overdue)</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Status</div>
+                                <div class="info-value">{{ task.get_status_display }}</div>
+                            </div>
+                        </div>
+
+                        <div class="progress-section">
+                            <div class="progress-header">
+                                <span>Progress</span>
+                                <span>{{ task.progress_percentage }}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ task.progress_percentage }}%;"></div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button class="btn btn-edit" onclick="openEditModal()">
+                                <i class="fas fa-edit"></i> Edit Task
+                            </button>
+                            {% if task.status != 'completed' %}
+                            <button class="btn btn-success" onclick="updateStatus('completed')">
+                                <i class="fas fa-check"></i> Mark Complete
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Comments Section -->
+                    <div class="comments-card">
+                        <div class="comments-header">
+                            <h2><i class="fas fa-comments"></i> Comments ({{ comments|length }})</h2>
+                            <button class="btn btn-primary" onclick="openCommentModal()">
+                                <i class="fas fa-plus"></i> Add Comment
+                            </button>
+                        </div>
+
+                        <div class="comment-list">
+                            {% for comment in comments %}
+                            <div class="comment-item">
+                                <div class="comment-header">
+                                    <span class="comment-user">{{ comment.user.username }}</span>
+                                    <span class="comment-time">{{ comment.created_at|date:"M d, Y h:i A" }}</span>
+                                </div>
+                                <div class="comment-text">{{ comment.comment }}</div>
+                            </div>
+                            {% empty %}
+                            <div style="text-align: center; padding: 30px;">
+                                <i class="fas fa-comment-slash fa-2x" style="color: #cbd5e1;"></i>
+                                <p style="margin-top: 10px;">No comments yet</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - History -->
+                <div>
+                    <div class="history-card">
+                        <h2 style="margin-bottom: 20px;"><i class="fas fa-history"></i> Activity History</h2>
+                        
+                        <div class="history-list">
+                            {% for item in history %}
+                            <div class="history-item">
+                                <div class="history-action">{{ item.action }}</div>
+                                <div class="history-details">
+                                    {% if item.field_name %}
+                                        {{ item.field_name }}: 
+                                        {% if item.old_value %}from "{{ item.old_value }}"{% endif %}
+                                        {% if item.new_value %}to "{{ item.new_value }}"{% endif %}
+                                    {% endif %}
+                                    {% if item.comment %}
+                                        <br>Comment: {{ item.comment }}
+                                    {% endif %}
+                                </div>
+                                <div class="history-time">
+                                    {{ item.created_at|date:"M d, Y h:i A" }} by {{ item.user.username|default:"System" }}
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div style="text-align: center; padding: 30px;">
+                                <i class="fas fa-clock fa-2x" style="color: #cbd5e1;"></i>
+                                <p>No history available</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Edit Task Modal -->
+    <div class="modal" id="editTaskModal">
+        <div class="modal-content">
+            <h2>Edit Task</h2>
+            <form id="editTaskForm" method="post" action="{% url 'update_task' task.id %}">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" name="title" value="{{ task.title }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="4" required>{{ task.description }}</textarea>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select name="status">
+                            <option value="pending" {% if task.status == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                            <option value="completed" {% if task.status == 'completed' %}selected{% endif %}>Completed</option>
+                            <option value="on_hold" {% if task.status == 'on_hold' %}selected{% endif %}>On Hold</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Priority</label>
+                        <select name="priority">
+                            <option value="low" {% if task.priority == 'low' %}selected{% endif %}>Low</option>
+                            <option value="medium" {% if task.priority == 'medium' %}selected{% endif %}>Medium</option>
+                            <option value="high" {% if task.priority == 'high' %}selected{% endif %}>High</option>
+                            <option value="urgent" {% if task.priority == 'urgent' %}selected{% endif %}>Urgent</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Due Date</label>
+                        <input type="date" name="due_date" value="{{ task.due_date|date:'Y-m-d' }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Progress (%)</label>
+                        <input type="number" name="progress" min="0" max="100" value="{{ task.progress_percentage }}">
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Comment Modal -->
+    <div class="modal" id="commentModal">
+        <div class="modal-content">
+            <h2>Add Comment</h2>
+            <form id="commentForm" method="post" action="{% url 'add_task_comment' task.id %}">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label>Comment</label>
+                    <textarea name="comment" rows="4" required placeholder="Enter your comment..."></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeCommentModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Comment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openEditModal() {
+            document.getElementById('editTaskModal').classList.add('active');
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editTaskModal').classList.remove('active');
+        }
+        
+        function openCommentModal() {
+            document.getElementById('commentModal').classList.add('active');
+        }
+        
+        function closeCommentModal() {
+            document.getElementById('commentModal').classList.remove('active');
+        }
+        
+        function updateStatus(status) {
+            if (confirm('Mark this task as ' + status + '?')) {
+                const formData = new FormData();
+                formData.append('status', status);
+                formData.append('progress', '100');
+                
+                fetch(`/employee/tasks/{{ task.id }}/status/`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ Task updated');
+                        location.reload();
+                    } else {
+                        alert('❌ Error: ' + data.error);
+                    }
+                });
+            }
+        }
+        
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                closeEditModal();
+                closeCommentModal();
+            }
+        });
+    </script>
+</body>
+</html>

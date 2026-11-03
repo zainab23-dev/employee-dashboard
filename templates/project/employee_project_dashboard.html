@@ -1,0 +1,749 @@
+<!-- templates/project/employee_project_dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Project Dashboard | Employee</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+        }
+
+        .dashboard-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+        }
+
+        .top-bar {
+            background: white;
+            border-radius: 20px;
+            padding: 25px 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .welcome-section h1 {
+            font-size: 28px;
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        .welcome-section p {
+            color: #64748b;
+            margin-top: 5px;
+            font-size: 15px;
+        }
+
+        .date-badge {
+            background: #eef2ff;
+            color: #4f46e5;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .stat-card:nth-child(1) .stat-icon { background: #eef2ff; color: #4f46e5; }
+        .stat-card:nth-child(2) .stat-icon { background: #fef3c7; color: #d97706; }
+        .stat-card:nth-child(3) .stat-icon { background: #d1fae5; color: #059669; }
+        .stat-card:nth-child(4) .stat-icon { background: #fee2e2; color: #dc2626; }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 35px;
+        }
+
+        .section-title {
+            margin-bottom: 20px;
+        }
+
+        .section-title h2 {
+            font-size: 20px;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .action-card {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .action-card:hover {
+            border-color: #4f46e5;
+            transform: translateY(-3px);
+            background: white;
+        }
+
+        .action-icon {
+            width: 60px;
+            height: 60px;
+            background: #eef2ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 24px;
+            color: #4f46e5;
+        }
+
+        .action-card h3 {
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: #1e293b;
+        }
+
+        .action-card p {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        /* Main Navigation */
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+
+        .nav-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 5px solid;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-card.projects { border-left-color: #4f46e5; }
+        .nav-card.tasks { border-left-color: #059669; }
+
+        .nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .nav-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .nav-card.projects .nav-icon { background: #eef2ff; color: #4f46e5; }
+        .nav-card.tasks .nav-icon { background: #d1fae5; color: #059669; }
+
+        .nav-count {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .nav-card h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #1e293b;
+        }
+
+        .nav-card p {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .nav-link {
+            color: #4f46e5;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* My Tasks Section */
+        .tasks-section {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 35px;
+        }
+
+        .tasks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-tab {
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            cursor: pointer;
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .filter-tab.active {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .tasks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .task-row {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .task-row:hover {
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .task-priority {
+            width: 4px;
+            height: 40px;
+            border-radius: 2px;
+            margin-right: 15px;
+        }
+
+        .priority-high { background: #ef4444; }
+        .priority-medium { background: #f59e0b; }
+        .priority-low { background: #10b981; }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 15px;
+            margin-top: 5px;
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .task-project {
+            background: #e2e8f0;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+        }
+
+        .task-status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            background: #e2e8f0;
+        }
+
+        .task-status.todo { background: #e2e8f0; color: #475569; }
+        .task-status.in-progress { background: #dbeafe; color: #1e40af; }
+        .task-status.completed { background: #d1fae5; color: #065f46; }
+
+        .task-progress {
+            width: 100px;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            margin-left: 15px;
+        }
+
+        .task-progress-fill {
+            height: 100%;
+            background: #4f46e5;
+            border-radius: 2px;
+        }
+
+        /* My Projects Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .project-mini-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .project-mini-card:hover {
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .project-mini-code {
+            font-size: 11px;
+            color: #4f46e5;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .project-mini-title {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 14px;
+        }
+
+        .project-mini-progress {
+            height: 3px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            margin: 10px 0;
+        }
+
+        .project-mini-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #64748b;
+        }
+
+        /* Bottom Section */
+        .bottom-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 35px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+        }
+
+        .handoff-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .handoff-item:last-child {
+            border-bottom: none;
+        }
+
+        .handoff-icon {
+            width: 30px;
+            height: 30px;
+            background: #fef3c7;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: #d97706;
+        }
+
+        @media (max-width: 1200px) {
+            .stats-grid,
+            .projects-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            
+            .stats-grid,
+            .actions-grid,
+            .nav-grid,
+            .projects-grid,
+            .bottom-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Include Employee Sidebar -->
+        {% include 'employee_sidebar.html' %}
+        
+        <div class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="welcome-section">
+                    <h1>Hey, {{ request.user.username }}! 👋</h1>
+                    <p>Here's what's happening with your projects today</p>
+                </div>
+                <div class="date-badge">
+                    <i class="far fa-calendar-alt"></i>
+                    {% now "l, d F Y" %}
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div class="stat-number">{{ my_projects_count|default:"0" }}</div>
+                    <div class="stat-label">My Projects</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="stat-number">{{ my_tasks_count|default:"0" }}</div>
+                    <div class="stat-label">My Tasks</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-number">{{ in_progress_count|default:"0" }}</div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-number">{{ completed_tasks_count|default:"0" }}</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <div class="section-title">
+                    <h2>
+                        <i class="fas fa-bolt" style="color: #f59e0b;"></i>
+                        Quick Actions
+                    </h2>
+                </div>
+                
+                <div class="actions-grid">
+                    <a href="{% url 'employee_projects' %}" class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h3>View All Projects</h3>
+                        <p>Browse all your projects</p>
+                    </a>
+                    
+                    <a href="{% url 'employee_projects' %}#tasks" class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-list-check"></i>
+                        </div>
+                        <h3>My Tasks</h3>
+                        <p>View all assigned tasks</p>
+                    </a>
+                    
+                    <a href="{% url 'handoff_management' %}" onclick="checkHandoffAlerts()" class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <h3>Handoffs</h3>
+                        <p>Explore handoffs</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Navigation -->
+            <div class="nav-grid">
+                <a href="{% url 'employee_projects' %}" class="nav-card projects">
+                    <div class="nav-header">
+                        <div class="nav-icon">
+                            <i class="fas fa-folder-open"></i>
+                        </div>
+                        <span class="nav-count">{{ my_projects_count|default:"0" }}</span>
+                    </div>
+                    <h3>My Projects</h3>
+                    <p>View all projects you're part of, track progress, and collaborate</p>
+                    <div class="nav-link">
+                        Go to Projects <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+
+                <a href="{% url 'employee_projects' %}" class="nav-card tasks">
+                    <div class="nav-header">
+                        <div class="nav-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <span class="nav-count">{{ my_tasks_count|default:"0" }}</span>
+                    </div>
+                    <h3>My Tasks</h3>
+                    <p>Manage your tasks, update progress, and request handoffs</p>
+                    <div class="nav-link">
+                        View Tasks <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+            </div>
+
+            <!-- My Tasks Section -->
+            <div class="tasks-section" id="tasks">
+                <div class="tasks-header">
+                    <h3 style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-list-check" style="color: #4f46e5;"></i>
+                        My Tasks
+                    </h3>
+                    <div class="filter-tabs">
+                        <span class="filter-tab active" onclick="filterTasks('all')">All</span>
+                        <span class="filter-tab" onclick="filterTasks('todo')">To Do</span>
+                        <span class="filter-tab" onclick="filterTasks('in_progress')">In Progress</span>
+                        <span class="filter-tab" onclick="filterTasks('completed')">Completed</span>
+                    </div>
+                </div>
+
+                <div class="tasks-list" id="tasksList">
+                    {% for task in my_recent_tasks %}
+                    <div class="task-row" onclick="location.href='{% url 'employee_task_detail' task.task_code %}'">
+                        <div class="task-priority priority-{{ task.priority }}"></div>
+                        <div class="task-info">
+                            <div class="task-title">{{ task.title }}</div>
+                            <div class="task-meta">
+                                <span><i class="far fa-calendar"></i> {{ task.due_date|date:"d M" }}</span>
+                                <span class="task-project">{{ task.project.title|truncatechars:20 }}</span>
+                                <span class="task-status {{ task.status|slugify }}">{{ task.get_status_display }}</span>
+                            </div>
+                        </div>
+                        <div class="task-progress">
+                            <div class="task-progress-fill" style="width: {{ task.progress }}%;"></div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div style="text-align: center; padding: 40px; color: #94a3b8;">
+                        <i class="fas fa-check-circle fa-3x"></i>
+                        <p style="margin-top: 10px;">No tasks assigned yet!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- My Projects -->
+            <div class="tasks-section">
+                <div class="tasks-header">
+                    <h3 style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-folder-open" style="color: #059669;"></i>
+                        My Projects
+                    </h3>
+                    <a href="{% url 'employee_projects' %}" style="color: #4f46e5; font-size: 14px;">
+                        View All <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <div class="projects-grid">
+                    {% for project in my_projects %}
+                    <div class="project-mini-card" onclick="location.href='{% url 'employee_project_detail' project.project_code %}'">
+                        <div class="project-mini-code">{{ project.project_code }}</div>
+                        <div class="project-mini-title">{{ project.title|truncatechars:20 }}</div>
+                        <div class="project-mini-progress">
+                            <div style="height: 100%; width: {{ project.progress }}%; background: #4f46e5; border-radius: 2px;"></div>
+                        </div>
+                        <div class="project-mini-stats">
+                            <span><i class="far fa-calendar"></i> {{ project.end_date|date:"d M" }}</span>
+                            <span>{{ project.task_stats.total }} tasks</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div style="grid-column: span 3; text-align: center; padding: 20px; color: #94a3b8;">
+                        No projects assigned
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Bottom Section: Handoffs & Discussion -->
+            <div class="bottom-section">
+                <!-- Pending Handoffs -->
+                <div class="card">
+                    <h3 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-exchange-alt" style="color: #f59e0b;"></i>
+                        Pending Handoffs
+                    </h3>
+                    
+                    {% for handoff in pending_handoffs %}
+                    <div class="handoff-item">
+                        <div class="handoff-icon">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 500;">{{ handoff.task.title }}</div>
+                            <div style="font-size: 11px; color: #64748b;">
+                                From: {{ handoff.from_user.username }}
+                            </div>
+                        </div>
+                        <a href="{% url 'employee_task_detail' handoff.task.task_code %}" 
+                           style="color: #4f46e5; font-size: 12px;">
+                            View
+                        </a>
+                    </div>
+                    {% empty %}
+                    <div style="text-align: center; color: #94a3b8;">No pending handoffs</div>
+                    {% endfor %}
+                </div>
+
+                <!-- Recent Discussions -->
+                <div class="card">
+                    <h3 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-comments" style="color: #4f46e5;"></i>
+                        Recent Discussions
+                    </h3>
+                    
+                    {% for comment in recent_comments %}
+                    <div class="handoff-item">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 500;">{{ comment.user.username }}</div>
+                            <div style="font-size: 11px; color: #64748b;">
+                                {{ comment.content|truncatechars:50 }}
+                            </div>
+                        </div>
+                        <div style="font-size: 10px; color: #94a3b8;">
+                            {{ comment.created_at|timesince }} ago
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div style="text-align: center; color: #94a3b8;">No discussions yet</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+   
+    <script>
+        function filterTasks(status) {
+            // Update active tab
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Here you can add AJAX call to filter tasks
+            console.log('Filtering tasks by:', status);
+        }
+
+        // Check handoffs on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof checkHandoffAlerts === 'function') {
+                checkHandoffAlerts();
+            }
+        });
+    </script>
+</body>
+</html>

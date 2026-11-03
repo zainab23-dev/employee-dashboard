@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ project.title }} | Discussion</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f1f5f9; }
+        .dashboard-wrapper { display: flex; }
+        .sidebar { width: 280px; background: white; height: 100vh; position: fixed; }
+        .main-content { flex: 1; margin-left: 280px; padding: 30px; }
+
+        .top-bar {
+            background: white; border-radius: 15px; padding: 20px 30px;
+            margin-bottom: 30px; display: flex; justify-content: space-between;
+            align-items: center;
+        }
+
+        .discussion-container {
+            background: white; border-radius: 15px; padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .comment-form {
+            background: #f8fafc; padding: 20px; border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        .comment-input {
+            width: 100%; padding: 12px; border: 2px solid #e2e8f0;
+            border-radius: 8px; margin-bottom: 10px;
+        }
+
+        .comment-item {
+            padding: 20px; border-bottom: 1px solid #e2e8f0;
+        }
+        .comment-header {
+            display: flex; justify-content: space-between; margin-bottom: 10px;
+        }
+        .comment-user { font-weight: 600; color: #2563eb; }
+        .comment-time { font-size: 12px; color: #64748b; }
+
+        .reply-btn {
+            background: none; border: none; color: #64748b;
+            font-size: 12px; cursor: pointer; margin-top: 10px;
+        }
+        .reply-form {
+            margin-left: 30px; margin-top: 10px; padding: 15px;
+            background: #f8fafc; border-radius: 8px; display: none;
+        }
+        .reply-form.active { display: block; }
+
+        .replies-section {
+            margin-left: 30px; margin-top: 15px;
+        }
+        .reply-item {
+            padding: 10px; background: #f8fafc; border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .nav-links {
+            display: flex; gap: 15px; margin-top: 20px;
+        }
+        .nav-link {
+            padding: 8px 16px; border-radius: 8px; text-decoration: none;
+            color: #64748b; display: flex; align-items: center; gap: 5px;
+        }
+        .nav-link.active { background: #2563eb; color: white; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        {% include 'employee_sidebar.html' %}
+        
+        <div class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 style="font-size: 24px;">{{ project.title }} - Discussion</h1>
+                    <p style="color: #64748b;">{{ project.project_code }}</p>
+                </div>
+                <a href="{% url 'employee_project_detail' project.project_code %}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+
+            <div class="discussion-container">
+                <!-- Comment Form -->
+                <div class="comment-form">
+                    <h3 style="margin-bottom: 10px;">Post a Comment</h3>
+                    <form id="commentForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="content_type" value="{{ content_type_id }}">
+                        <input type="hidden" name="object_id" value="{{ project.id }}">
+                        <textarea name="content" class="comment-input" rows="3" placeholder="Write your comment..."></textarea>
+                        <button type="submit" class="btn-primary">Post Comment</button>
+                    </form>
+                </div>
+
+                <!-- Comments List -->
+                <h3 style="margin-bottom: 20px;">Discussion Thread</h3>
+                
+                {% for comment in comments %}
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <span class="comment-user">{{ comment.user.username }}</span>
+                        <span class="comment-time">{{ comment.created_at|timesince }} ago</span>
+                    </div>
+                    <p>{{ comment.content }}</p>
+                    
+                    <!-- Replies -->
+                    {% for reply in comment.replies.all %}
+                    <div class="replies-section">
+                        <div class="reply-item">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="font-weight: 600; color: #2563eb;">{{ reply.user.username }}</span>
+                                <span style="font-size: 10px; color: #64748b;">{{ reply.created_at|timesince }} ago</span>
+                            </div>
+                            <p style="margin-top: 5px;">{{ reply.content }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <!-- Reply Button -->
+                    <button class="reply-btn" onclick="toggleReplyForm({{ comment.id }})">
+                        <i class="fas fa-reply"></i> Reply
+                    </button>
+                    
+                    <!-- Reply Form -->
+                    <div class="reply-form" id="reply-form-{{ comment.id }}">
+                        <form class="replyForm" data-parent="{{ comment.id }}">
+                            {% csrf_token %}
+                            <input type="hidden" name="content_type" value="{{ content_type_id }}">
+                            <input type="hidden" name="object_id" value="{{ project.id }}">
+                            <textarea name="content" class="comment-input" rows="2" placeholder="Write your reply..."></textarea>
+                            <button type="submit" class="btn-primary">Post Reply</button>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <p style="text-align: center; color: #94a3b8; padding: 40px;">
+                    No comments yet. Start the discussion!
+                </p>
+                {% endfor %}
+            </div>
+
+            <!-- Navigation -->
+            <div class="nav-links">
+                <a href="{% url 'employee_project_detail' project.project_code %}" class="nav-link">
+                    <i class="fas fa-info-circle"></i> Overview
+                </a>
+                <a href="#" class="nav-link active">
+                    <i class="fas fa-comments"></i> Discussion
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Comment Form
+        document.getElementById('commentForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            fetch('{% url "add_comment" %}', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        });
+
+        // Reply Forms
+        document.querySelectorAll('.replyForm').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                formData.append('parent', this.dataset.parent);
+                
+                fetch('{% url "add_comment" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                });
+            });
+        });
+
+        function toggleReplyForm(commentId) {
+            const form = document.getElementById('reply-form-' + commentId);
+            form.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>

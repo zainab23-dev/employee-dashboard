@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Request Submitted | Consups</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: #f1f5f9;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .success-container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            overflow: hidden;
+            text-align: center;
+        }
+        
+        .success-header {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 40px 30px;
+        }
+        
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: #10b981;
+            font-size: 40px;
+        }
+        
+        .success-header h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .success-body {
+            padding: 40px;
+        }
+        
+        .info-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #64748b;
+            font-weight: 500;
+        }
+        
+        .info-value {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: #fef3c7;
+            color: #92400e;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #1e293b;
+            margin-left: 15px;
+        }
+        
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-header">
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <h2>Leave Request Submitted!</h2>
+            <p>Your request has been sent to HR for approval</p>
+        </div>
+        
+        <div class="success-body">
+            <div class="info-card">
+                <h3 style="margin-bottom: 15px; color: #1e293b;">Request Details</h3>
+                
+                <div class="info-row">
+                    <span class="info-label">Employee Name</span>
+                    <span class="info-value">{{ employee.name }}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Leave Type</span>
+                    <span class="info-value">{{ leave.get_leave_type_display }}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Duration</span>
+                    <span class="info-value">{{ leave.start_date|date:"d M Y" }} to {{ leave.end_date|date:"d M Y" }}</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Total Days</span>
+                    <span class="info-value">{{ leave.days_count }} day(s)</span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Status</span>
+                    <span class="info-value">
+                        <span class="status-badge">Pending Approval</span>
+                    </span>
+                </div>
+                
+                <div class="info-row">
+                    <span class="info-label">Applied On</span>
+                    <span class="info-value">{{ leave.created_at|date:"d M Y, h:i A" }}</span>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <p style="color: #64748b; margin-bottom: 20px;">
+                    <i class="fas fa-info-circle"></i> 
+                    You will be notified once HR reviews your request.
+                </p>
+                
+                <a href="{% url 'employee_dashboard' %}" class="btn btn-primary">
+                    <i class="fas fa-home"></i> Go to Dashboard
+                </a>
+                <a href="{% url 'apply_leave' %}" class="btn btn-secondary">
+                    <i class="fas fa-plus"></i> Apply Another
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,851 @@
+<!-- templates/project/admin_project_dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Management Dashboard | Admin</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+        }
+
+        .dashboard-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+            transition: all 0.3s;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: white;
+            border-radius: 20px;
+            padding: 25px 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-bar h1 {
+            font-size: 28px;
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        .top-bar p {
+            color: #64748b;
+            margin-top: 5px;
+            font-size: 15px;
+        }
+
+        .date-badge {
+            background: #eef2ff;
+            color: #4f46e5;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .stat-card:nth-child(1) .stat-icon {
+            background: #eef2ff;
+            color: #4f46e5;
+        }
+
+        .stat-card:nth-child(2) .stat-icon {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .stat-card:nth-child(3) .stat-icon {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .stat-card:nth-child(4) .stat-icon {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 35px;
+        }
+
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title h2 {
+            font-size: 20px;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .action-card {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .action-card:hover {
+            border-color: #4f46e5;
+            transform: translateY(-3px);
+            background: white;
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.1);
+        }
+
+        .action-icon {
+            width: 60px;
+            height: 60px;
+            background: #eef2ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 24px;
+            color: #4f46e5;
+        }
+
+        .action-card h3 {
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: #1e293b;
+        }
+
+        .action-card p {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        /* Main Navigation Cards */
+        .nav-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+
+        .nav-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 5px solid;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-card.projects {
+            border-left-color: #4f46e5;
+        }
+
+        .nav-card.teams {
+            border-left-color: #059669;
+        }
+
+        .nav-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .nav-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .nav-card.projects .nav-icon {
+            background: #eef2ff;
+            color: #4f46e5;
+        }
+
+        .nav-card.teams .nav-icon {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .nav-count {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .nav-card h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #1e293b;
+        }
+
+        .nav-card p {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .nav-link {
+            color: #4f46e5;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Recent Projects */
+        .recent-section {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 35px;
+        }
+
+        .projects-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .project-item {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .project-item:hover {
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .project-code {
+            font-size: 12px;
+            color: #4f46e5;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .project-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+
+        .project-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 10px;
+        }
+
+        .project-progress {
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #4f46e5;
+            border-radius: 2px;
+        }
+
+        .view-all {
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        .view-all a {
+            color: #4f46e5;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Activity & Tasks */
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .activity-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4f46e5;
+        }
+
+        .activity-dot.completed {
+            background: #10b981;
+        }
+
+        .activity-dot.handoff {
+            background: #f59e0b;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 500;
+            color: #1e293b;
+        }
+
+        .activity-time {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .projects-list {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            
+            .stats-grid,
+            .actions-grid,
+            .nav-cards,
+            .projects-list,
+            .bottom-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Notification Bell */
+        .notification-wrapper {
+            position: relative;
+        }
+
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            width: 300px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 1000;
+        }
+
+        .notification-dropdown.show {
+            display: block;
+        }
+
+        .notification-header {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 600;
+        }
+
+        .notification-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: pointer;
+        }
+
+        .notification-item:hover {
+            background: #f8fafc;
+        }
+
+        .notification-item.unread {
+            background: #eef2ff;
+        }
+
+        .notification-message {
+            font-size: 13px;
+            color: #1e293b;
+        }
+
+        .notification-time {
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Include Admin Sidebar -->
+        {% include 'admin_sidebar.html' %}
+        
+        <div class="main-content">
+            <!-- Top Bar with Notifications -->
+            <div class="top-bar">
+                <div>
+                    <h1>Welcome back, {{ request.user.username }}!</h1>
+                    <p>Manage your projects, teams, and tasks from one place</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <div class="notification-wrapper" id="notificationWrapper">
+                        <div class="notification-bell" id="notificationBell">
+                            <i class="far fa-bell" style="font-size: 22px; color: #4f46e5;"></i>
+                            <span class="notification-badge" id="notificationBadge">0</span>
+                        </div>
+                        
+                        <!-- Notification Dropdown -->
+                        <div class="notification-dropdown" id="notificationDropdown">
+                            <div class="notification-header">
+                                <span>Notifications</span>
+                                <span style="float: right; font-size: 11px; color: #4f46e5; cursor: pointer;" 
+                                      onclick="markAllRead()">Mark all read</span>
+                            </div>
+                            <div class="notification-list" id="notificationList">
+                                <!-- Notifications loaded via JS -->
+                                <div style="text-align: center; padding: 20px; color: #94a3b8;">
+                                    Loading...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="date-badge">
+                        <i class="far fa-calendar-alt"></i>
+                        {% now "l, d F Y" %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div class="stat-number">{{ total_projects|default:"0" }}</div>
+                    <div class="stat-label">Total Projects</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-number">{{ total_teams|default:"0" }}</div>
+                    <div class="stat-label">Active Teams</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="stat-number">{{ total_tasks|default:"0" }}</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="stat-number">{{ pending_handoffs|default:"0" }}</div>
+                    <div class="stat-label">Pending Handoffs</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <div class="section-title">
+                    <h2>
+                        <i class="fas fa-bolt" style="color: #f59e0b;"></i>
+                        Quick Actions
+                    </h2>
+                </div>
+                
+                <div class="actions-grid">
+                    <a href="{% url 'admin_create_project' %}" class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <h3>New Project</h3>
+                        <p>Create a new project</p>
+                    </a>
+                    
+                    <a href="{% url 'create_team' %}" class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h3>New Team</h3>
+                        <p>Create a new team</p>
+                    </a>
+                    
+                    <a href="{% url 'admin_project_list' %}" class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <h3>View Tasks</h3>
+                        <p>Manage all tasks</p>
+                    </a>
+                    
+                    <a href="{% url 'team_list' %}" class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-users-cog"></i>
+                        </div>
+                        <h3>Manage Teams</h3>
+                        <p>Edit team details</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Navigation Cards -->
+            <div class="nav-cards">
+                <!-- Projects Navigation -->
+                <a href="{% url 'admin_project_list' %}" class="nav-card projects">
+                    <div class="nav-card-header">
+                        <div class="nav-icon">
+                            <i class="fas fa-folder-open"></i>
+                        </div>
+                        <span class="nav-count">{{ total_projects|default:"0" }}</span>
+                    </div>
+                    <h3>Projects Management</h3>
+                    <p>View all projects, track progress, manage tasks, and monitor team performance</p>
+                    <div class="nav-link">
+                        Browse Projects <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+
+                <!-- Teams Navigation -->
+                <a href="{% url 'team_list' %}" class="nav-card teams">
+                    <div class="nav-card-header">
+                        <div class="nav-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <span class="nav-count">{{ total_teams|default:"0" }}</span>
+                    </div>
+                    <h3>Teams Management</h3>
+                    <p>Manage teams, assign leaders, and track team performance across projects</p>
+                    <div class="nav-link">
+                        Browse Teams <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Recent Projects -->
+            <div class="recent-section">
+                <div class="section-title">
+                    <h2>
+                        <i class="fas fa-clock" style="color: #4f46e5;"></i>
+                        Recent Projects
+                    </h2>
+                    <a href="{% url 'admin_project_list' %}" style="color: #4f46e5; font-size: 14px;">
+                        View All <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <div class="projects-list">
+                    {% for project in recent_projects %}
+                    <div class="project-item" onclick="location.href='{% url 'admin_project_detail' project.project_code %}'">
+                        <div class="project-code">{{ project.project_code }}</div>
+                        <div class="project-title">{{ project.title|truncatechars:25 }}</div>
+                        <div class="project-meta">
+                            <span><i class="far fa-user"></i> {{ project.team_leader.username }}</span>
+                            <span><i class="far fa-calendar"></i> {{ project.end_date|date:"d M" }}</span>
+                        </div>
+                        <div class="project-progress">
+                            <div class="progress-fill" style="width: {{ project.progress }}%;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-top: 5px;">
+                            <span>{{ project.progress }}% Complete</span>
+                            <span>{{ project.tasks.count }} tasks</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div style="grid-column: span 3; text-align: center; padding: 40px;">
+                        <i class="fas fa-folder-open fa-3x" style="color: #94a3b8;"></i>
+                        <p style="margin-top: 10px; color: #64748b;">No projects yet</p>
+                        <a href="{% url 'admin_create_project' %}" style="color: #4f46e5; text-decoration: none; margin-top: 10px; display: inline-block;">
+                            Create your first project
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Bottom Grid: Activity & Pending Tasks -->
+            <div class="bottom-grid">
+                <!-- Recent Activity -->
+                <div class="activity-card">
+                    <h3 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-history" style="color: #4f46e5;"></i>
+                        Recent Activity
+                    </h3>
+                    
+                    <div class="activity-list">
+                        {% for activity in recent_activities %}
+                        <div class="activity-item">
+                            <div class="activity-dot {% if activity.action == 'complete' %}completed{% elif activity.action == 'handoff' %}handoff{% endif %}"></div>
+                            <div class="activity-content">
+                                <div class="activity-title">{{ activity.details }}</div>
+                                <div class="activity-time">{{ activity.created_at|timesince }} ago</div>
+                            </div>
+                            <div style="font-size: 11px; color: #64748b;">{{ activity.user.username }}</div>
+                        </div>
+                        {% empty %}
+                        <div style="text-align: center; color: #94a3b8;">No recent activity</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Pending Tasks & Handoffs -->
+                <div class="activity-card">
+                    <h3 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-clock" style="color: #f59e0b;"></i>
+                        Pending Handoffs
+                    </h3>
+                    
+                    <div class="activity-list">
+                        {% for handoff in pending_handoffs_list %}
+                        <div class="activity-item">
+                            <div class="activity-dot handoff"></div>
+                            <div class="activity-content">
+                                <div class="activity-title">{{ handoff.task.title }}</div>
+                                <div class="activity-time">
+                                    From: {{ handoff.from_user.username }} → To: {{ handoff.to_user.username }}
+                                </div>
+                            </div>
+                            <a href="{% url 'admin_task_detail' handoff.task.task_code %}" style="color: #4f46e5;">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                        {% empty %}
+                        <div style="text-align: center; color: #94a3b8;">No pending handoffs</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+
+    <script>
+        // Notification System
+        function loadNotifications() {
+            fetch('{% url "get_notifications" %}')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.getElementById('notificationBadge');
+                    if (data.unread_count > 0) {
+                        badge.textContent = data.unread_count > 9 ? '9+' : data.unread_count;
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                    
+                    const list = document.getElementById('notificationList');
+                    if (data.notifications.length === 0) {
+                        list.innerHTML = '<div style="text-align: center; padding: 20px; color: #94a3b8;">No notifications</div>';
+                    } else {
+                        list.innerHTML = '';
+                        data.notifications.forEach(n => {
+                            const item = document.createElement('div');
+                            item.className = `notification-item ${n.is_read ? '' : 'unread'}`;
+                            item.innerHTML = `
+                                <div class="notification-message">${n.message}</div>
+                                <div class="notification-time">${n.created_at}</div>
+                            `;
+                            item.onclick = () => {
+                                if (!n.is_read) markAsRead(n.id);
+                                if (n.link) window.location.href = n.link;
+                            };
+                            list.appendChild(item);
+                        });
+                    }
+                });
+        }
+
+        function markAsRead(id) {
+            fetch(`/notifications/${id}/read/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            }).then(() => loadNotifications());
+        }
+
+        function markAllRead() {
+            fetch('/notifications/mark-all-read/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            }).then(() => loadNotifications());
+        }
+
+        // Toggle notification dropdown
+        document.getElementById('notificationBell').addEventListener('click', function(e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.classList.toggle('show');
+            loadNotifications();
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const wrapper = document.getElementById('notificationWrapper');
+            if (!wrapper.contains(e.target)) {
+                document.getElementById('notificationDropdown').classList.remove('show');
+            }
+        });
+
+        // Load notifications every 30 seconds
+        loadNotifications();
+        setInterval(loadNotifications, 30000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Payroll | CEO</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f1f5f9; }
+        .dashboard-wrapper { display: flex; min-height: 100vh; }
+        .admin-main { flex: 1; margin-left: 280px; padding: 30px; }
+
+        .top-bar {
+            background: white; padding: 20px 30px; border-radius: 15px;
+            margin-bottom: 30px; display: flex; justify-content: space-between;
+            align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .page-title h1 { font-size: 24px; color: #1e293b; }
+        .page-title p { color: #64748b; font-size: 14px; margin-top: 5px; }
+
+        .btn-primary {
+            background: #2563eb; color: white; padding: 10px 20px;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-secondary {
+            background: #e2e8f0; color: #1e293b; padding: 10px 20px;
+            border: none; border-radius: 8px; font-weight: 500; cursor: pointer;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-success {
+            background: #10b981; color: white; padding: 10px 20px;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+        }
+        .btn-danger {
+            background: #ef4444; color: white; padding: 10px 20px;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+        }
+
+        /* Payroll Header */
+        .payroll-header {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white; border-radius: 15px; padding: 30px;
+            margin-bottom: 30px;
+        }
+        .header-top {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px;
+        }
+        .payroll-code {
+            font-size: 28px; font-weight: 700;
+        }
+        .status-badge {
+            padding: 8px 20px; border-radius: 30px; font-size: 14px;
+            background: rgba(255,255,255,0.2);
+        }
+        .header-stats {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+            margin-top: 20px;
+        }
+        .stat-item { text-align: center; }
+        .stat-label { font-size: 13px; opacity: 0.8; margin-bottom: 5px; }
+        .stat-value { font-size: 24px; font-weight: 700; }
+
+        /* Action Bar */
+        .action-bar {
+            background: white; border-radius: 15px; padding: 20px;
+            margin-bottom: 30px; display: flex; justify-content: space-between;
+            align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .action-buttons {
+            display: flex; gap: 10px;
+        }
+
+        /* Table */
+        .table-container {
+            background: white; border-radius: 15px; padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .table-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding-bottom: 15px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        table {
+            width: 100%; border-collapse: collapse;
+        }
+        th {
+            text-align: left; padding: 12px; background: #f8fafc;
+            color: #64748b; font-weight: 600; font-size: 13px;
+        }
+        td {
+            padding: 12px; border-bottom: 1px solid #e2e8f0;
+            color: #1e293b; font-size: 14px;
+        }
+        .text-right { text-align: right; }
+        .total-row {
+            background: #f8fafc; font-weight: 600;
+        }
+
+        /* Approval Modal */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white; border-radius: 15px; max-width: 500px; width: 90%;
+            padding: 30px;
+        }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #f1f5f9;
+        }
+        .close { font-size: 24px; cursor: pointer; color: #64748b; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label {
+            display: block; font-weight: 600; margin-bottom: 5px; color: #1e293b;
+        }
+        .form-group textarea {
+            width: 100%; padding: 10px; border: 1px solid #e2e8f0;
+            border-radius: 8px; font-size: 14px; min-height: 100px;
+        }
+        .modal-footer {
+            display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        {% include 'admin_sidebar.html' %}
+        
+        <main class="admin-main">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Review Payroll</h1>
+                    <p>{{ payroll.payroll_code }} - Period: {{ payroll.pay_period_start|date:"d M Y" }} to {{ payroll.pay_period_end|date:"d M Y" }}</p>
+                </div>
+                <a href="{% url 'ceo_payroll_dashboard' %}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+
+            <!-- Payroll Header -->
+            <div class="payroll-header">
+                <div class="header-top">
+                    <span class="payroll-code">{{ payroll.payroll_code }}</span>
+                    <span class="status-badge">{{ payroll.get_status_display }}</span>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <div class="stat-label">Payment Date</div>
+                        <div class="stat-value">{{ payroll.payment_date|date:"d M Y" }}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Employees</div>
+                        <div class="stat-value">{{ payroll.employee_count }}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Total Net Pay</div>
+                        <div class="stat-value">${{ payroll.total_net_pay|floatformat:0 }}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Generated By</div>
+                        <div class="stat-value">{{ payroll.generated_by.username|default:"HR" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Bar -->
+            {% if payroll.status == 'pending_ceo' %}
+            <div class="action-bar">
+                <div>
+                    <i class="fas fa-info-circle" style="color: #f59e0b;"></i>
+                    This payroll is pending your approval
+                </div>
+                <div class="action-buttons">
+                    <button class="btn-success" onclick="openApproveModal()">
+                        <i class="fas fa-check"></i> Approve Payroll
+                    </button>
+                    <button class="btn-danger" onclick="openRejectModal()">
+                        <i class="fas fa-times"></i> Reject Payroll
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Employee Details -->
+            <div class="table-container">
+                <div class="table-header">
+                    <h3><i class="fas fa-users" style="color: #2563eb;"></i> Employee Salary Breakdown</h3>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th class="text-right">Basic</th>
+                            <th class="text-right">Allowances</th>
+                            <th class="text-right">Gross</th>
+                            <th class="text-right">Deductions</th>
+                            <th class="text-right">Net Pay</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for emp in payroll_employees %}
+                        <tr>
+                            <td>
+                                <strong>{{ emp.employee.name }}</strong><br>
+                                <small style="color: #64748b;">{{ emp.employee.employee_id }}</small>
+                            </td>
+                            <td>{{ emp.employee.department|default:"-" }}</td>
+                            <td class="text-right">${{ emp.basic_salary|floatformat:2 }}</td>
+                            <td class="text-right">
+                                ${{ emp.house_rent|add:emp.conveyance|add:emp.medical|add:emp.bonus|add:emp.overtime|floatformat:2 }}
+                            </td>
+                            <td class="text-right">${{ emp.gross_pay|floatformat:2 }}</td>
+                            <td class="text-right">${{ emp.total_deductions|floatformat:2 }}</td>
+                            <td class="text-right"><strong>${{ emp.net_pay|floatformat:2 }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td colspan="4"></td>
+                            <td class="text-right"><strong>${{ payroll.total_gross_pay|floatformat:2 }}</strong></td>
+                            <td class="text-right"><strong>${{ payroll.total_deductions|floatformat:2 }}</strong></td>
+                            <td class="text-right"><strong>${{ payroll.total_net_pay|floatformat:2 }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Approve Modal -->
+    <div class="modal" id="approveModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Approve Payroll</h2>
+                <span class="close" onclick="closeApproveModal()">&times;</span>
+            </div>
+            <form id="approveForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Comments (Optional)</label>
+                    <textarea name="notes" placeholder="Add any comments about this approval..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeApproveModal()">Cancel</button>
+                    <button type="submit" class="btn-success">Approve Payroll</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reject Modal -->
+    <div class="modal" id="rejectModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Reject Payroll</h2>
+                <span class="close" onclick="closeRejectModal()">&times;</span>
+            </div>
+            <form id="rejectForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Reason for Rejection *</label>
+                    <textarea name="notes" placeholder="Please provide reason for rejection..." required></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeRejectModal()">Cancel</button>
+                    <button type="submit" class="btn-danger">Reject Payroll</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openApproveModal() {
+            document.getElementById('approveModal').classList.add('active');
+        }
+        function closeApproveModal() {
+            document.getElementById('approveModal').classList.remove('active');
+        }
+
+        function openRejectModal() {
+            document.getElementById('rejectModal').classList.add('active');
+        }
+        function closeRejectModal() {
+            document.getElementById('rejectModal').classList.remove('active');
+        }
+
+        document.getElementById('approveForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            fetch('{% url "approve_payroll" payroll.id %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ Payroll approved successfully');
+                    window.location.href = '{% url "ceo_payroll_dashboard" %}';
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            });
+        });
+
+        document.getElementById('rejectForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            fetch('{% url "reject_payroll" payroll.id %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ Payroll rejected');
+                    window.location.href = '{% url "ceo_payroll_dashboard" %}';
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            });
+        });
+
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                closeApproveModal();
+                closeRejectModal();
+            }
+        });
+    </script>
+</body>
+</html>

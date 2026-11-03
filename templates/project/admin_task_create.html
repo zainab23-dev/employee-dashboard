@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Task | {{ project.title }}</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f1f5f9; }
+        .dashboard-wrapper { display: flex; }
+        .sidebar { width: 280px; background: white; height: 100vh; position: fixed; }
+        .main-content { flex: 1; margin-left: 280px; padding: 30px; }
+
+        .top-bar {
+            background: white; border-radius: 15px; padding: 20px 30px;
+            margin-bottom: 30px; display: flex; justify-content: space-between;
+            align-items: center;
+        }
+
+        .form-container {
+            background: white; border-radius: 15px; padding: 30px;
+            max-width: 600px; margin: 0 auto;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        label {
+            display: block; font-weight: 600; margin-bottom: 8px;
+            color: #1e293b;
+        }
+        input, select, textarea {
+            width: 100%; padding: 12px;
+            border: 2px solid #e2e8f0; border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: #2563eb; color: white; padding: 12px 24px;
+            border: none; border-radius: 8px; font-weight: 600;
+            cursor: pointer; width: 100%;
+        }
+        .btn-secondary {
+            background: #e2e8f0; color: #1e293b; padding: 12px 24px;
+            border: none; border-radius: 8px; font-weight: 600;
+            cursor: pointer; text-decoration: none; display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        {% include 'admin_sidebar.html' %}
+        
+        <div class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 style="font-size: 24px;">Create New Task</h1>
+                    <p style="color: #64748b;">{{ project.title }} · {{ project.project_code }}</p>
+                </div>
+                <a href="{% url 'admin_project_detail' project.project_code %}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+            
+            <div class="form-container">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label>Task Title *</label>
+                        <input type="text" name="title" required placeholder="e.g., Design homepage">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea name="description" rows="4" placeholder="Describe the task..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Assign To *</label>
+                        <select name="assigned_to" required>
+                            <option value="">-- Select Member --</option>
+                            {% for member in members %}
+                            <option value="{{ member.id }}">{{ member.username }} ({{ member.email }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Due Date *</label>
+                        <input type="date" name="due_date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Priority</label>
+                        <select name="priority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Create Task</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

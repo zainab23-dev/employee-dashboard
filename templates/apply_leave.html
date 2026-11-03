@@ -1,0 +1,686 @@
+<!-- # Apply for Leave Template
+This template provides a user-friendly interface for employees to submit their leave requests. 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply for Leave | Consups</title>
+    {% load static %}
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f1f5f9;
+            min-height: 100vh;
+        }
+
+        .dashboard-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+            background: #f1f5f9;
+        }
+
+        .leave-container {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .leave-header {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .leave-header h2 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .leave-header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .leave-body {
+            padding: 40px;
+        }
+
+        /* Employee Info Card */
+        .employee-card {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        .employee-avatar {
+            width: 80px;
+            height: 80px;
+            background: #2563eb;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(37,99,235,0.3);
+        }
+
+        .employee-info h3 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            color: #1e293b;
+        }
+
+        .employee-info .designation {
+            color: #2563eb;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .employee-meta {
+            display: flex;
+            gap: 20px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .employee-meta i {
+            color: #2563eb;
+            margin-right: 5px;
+        }
+
+        /* Leave Balance */
+        .balance-section {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .balance-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1e293b;
+        }
+
+        .balance-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .balance-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        .balance-type {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+
+        .balance-days {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+        .balance-used {
+            font-size: 12px;
+            color: #ef4444;
+        }
+
+        /* Form Styles */
+        .form-section {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .form-section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-section-title i {
+            color: #2563eb;
+            font-size: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .required::after {
+            content: '*';
+            color: #ef4444;
+            margin-left: 4px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .info-text {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .info-text i {
+            color: #2563eb;
+        }
+
+        /* Guidelines */
+        .guidelines {
+            background: #e0f2fe;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 25px 0;
+            border-left: 4px solid #2563eb;
+        }
+
+        .guidelines h4 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+
+        .guidelines ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .guidelines li {
+            font-size: 14px;
+            color: #334155;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .guidelines li i {
+            color: #2563eb;
+            font-size: 12px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(37,99,235,0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .alert i {
+            font-size: 20px;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ffffff;
+            border-top: 3px solid #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: #2563eb;
+        }
+
+        .back-link i {
+            margin-right: 5px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .employee-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .employee-meta {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .balance-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Include Employee Sidebar -->
+        {% include 'employee_sidebar.html' %}
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <div class="leave-container">
+                <div class="leave-header">
+                    <h2>Leave Request Application</h2>
+                    <p>Submit your leave request for approval</p>
+                </div>
+
+                <div class="leave-body">
+                    <!-- Messages -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <!-- Employee Info Card -->
+                    <div class="employee-card">
+                        <div class="employee-avatar">
+                            {{ employee.name|make_list|first }}{{ employee.name|make_list|last }}
+                        </div>
+                        <div class="employee-info">
+                            <h3>{{ employee.name }}</h3>
+                            <div class="designation">{{ employee.position|default:"Staff" }} • {{ employee.department }}</div>
+                            <div class="employee-meta">
+                                <span><i class="fas fa-envelope"></i> {{ employee.email }}</span>
+                                <span><i class="fas fa-phone"></i> {{ employee.phone }}</span>
+                                <span><i class="fas fa-calendar"></i> Joined: {{ employee.join_date|date:"d M Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Leave Balance Section -->
+                    <div class="balance-section">
+                        <div class="balance-title">
+                            <i class="fas fa-chart-pie" style="color: #2563eb; margin-right: 8px;"></i>
+                            Your Leave Balance
+                        </div>
+                        <div class="balance-grid">
+                            <div class="balance-item">
+                                <div class="balance-type">Annual Leave</div>
+                                <div class="balance-days">14</div>
+                                <!-- <div class="balance-used">2 used</div> -->
+                            </div>
+                            <div class="balance-item">
+                                <div class="balance-type">Sick Leave</div>
+                                <div class="balance-days">10</div>
+                                <!-- <div class="balance-used">1 used</div> -->
+                            </div>
+                            <div class="balance-item">
+                                <div class="balance-type">Personal Leave</div>
+                                <div class="balance-days">5</div>
+                                <!-- <div class="balance-used">0 used</div> -->
+                            </div>
+                            <div class="balance-item">
+                                <div class="balance-type">Unpaid Leave</div>
+                                <div class="balance-days">Unlimited</div>
+                                <!-- <div class="balance-used">-</div> -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Leave Application Form -->
+                    <form method="post" action="{% url 'apply_leave' %}" id="leaveForm">
+                        {% csrf_token %}
+                        
+                        <!-- Leave Type Section -->
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="fas fa-calendar-alt"></i>
+                                Leave Type & Duration
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="required">Select Leave Type</label>
+                                <select name="leave_type" id="leaveType" required onchange="updateBalanceInfo()">
+                                    <option value="">-- Choose Leave Type --</option>
+                                    <option value="annual">Annual Leave (14 days remaining)</option>
+                                    <option value="sick">Sick Leave (10 days remaining)</option>
+                                    <option value="personal">Personal Leave (5 days remaining)</option>
+                                    <option value="unpaid">Unpaid Leave</option>
+                                </select>
+                                <div class="info-text" id="balanceInfo">
+                                    <i class="fas fa-info-circle"></i>
+                                    Select leave type to see available balance
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="required">Start Date</label>
+                                    <input type="date" name="start_date" id="startDate" min="{{ today }}" required onchange="calculateDays()">
+                                </div>
+                                <div class="form-group">
+                                    <label class="required">End Date</label>
+                                    <input type="date" name="end_date" id="endDate" min="{{ today }}" required onchange="calculateDays()">
+                                </div>
+                            </div>
+
+                            <div class="form-group" id="daysDisplay" style="display: none;">
+                                <div class="info-text" style="font-size: 16px; background: #e0e7ff; padding: 10px; border-radius: 8px;">
+                                    <i class="fas fa-calculator"></i>
+                                    Total Days: <strong id="totalDays">0</strong> day(s)
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reason Section -->
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="fas fa-pen"></i>
+                                Reason for Leave
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="required">Detailed Reason</label>
+                                <textarea name="reason" id="reason" required placeholder="Please provide a detailed reason for your leave request. Include any relevant information that will help in the approval process..."></textarea>
+                                <div class="info-text">
+                                    <i class="fas fa-info-circle"></i>
+                                    Minimum 20 characters required
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Additional Notes (Optional)</label>
+                                <textarea name="notes" id="notes" placeholder="Any additional information you'd like to add..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Contact During Leave -->
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="fas fa-phone-alt"></i>
+                                Contact During Leave
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Alternate Phone</label>
+                                    <input type="text" name="alt_phone" placeholder="Phone number where you can be reached">
+                                </div>
+                                <div class="form-group">
+                                    <label>Alternate Email</label>
+                                    <input type="email" name="alt_email" placeholder="Email for urgent communication">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Work Handover -->
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="fas fa-tasks"></i>
+                                Work Handover (Optional)
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Work will be handled by</label>
+                                <input type="text" name="handover_to" placeholder="Name of colleague handling your work">
+                            </div>
+                            <div class="form-group">
+                                <label>Handover Notes</label>
+                                <textarea name="handover_notes" placeholder="Important tasks and instructions for the person handling your work..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="fas fa-paper-plane"></i>
+                            Submit Leave Request
+                        </button>
+                    </form>
+
+                    <!-- Back Link -->
+                    <a href="{% url 'employee_dashboard' %}" class="back-link">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Calculate days between dates
+        function calculateDays() {
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            
+            if (start && end) {
+                const startDate = new Date(start);
+                const endDate = new Date(end);
+                
+                if (endDate < startDate) {
+                    alert('End date cannot be before start date');
+                    document.getElementById('endDate').value = '';
+                    document.getElementById('daysDisplay').style.display = 'none';
+                    return;
+                }
+                
+                const diffTime = Math.abs(endDate - startDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                
+                document.getElementById('totalDays').textContent = diffDays;
+                document.getElementById('daysDisplay').style.display = 'block';
+            }
+        }
+
+        // Update balance info based on leave type
+        function updateBalanceInfo() {
+            const leaveType = document.getElementById('leaveType').value;
+            const balanceInfo = document.getElementById('balanceInfo');
+            
+            const balances = {
+                'annual': 'You have 14 annual leave days remaining',
+                'sick': 'You have 10 sick leave days remaining',
+                'personal': 'You have 5 personal leave days remaining',
+                'unpaid': 'Unpaid leave - no impact on leave balance'
+            };
+            
+            if (leaveType && balances[leaveType]) {
+                balanceInfo.innerHTML = `<i class="fas fa-info-circle"></i> ${balances[leaveType]}`;
+            } else {
+                balanceInfo.innerHTML = '<i class="fas fa-info-circle"></i> Select leave type to see available balance';
+            }
+        }
+
+        // Form validation
+        document.getElementById('leaveForm').addEventListener('submit', function(e) {
+            const reason = document.getElementById('reason').value;
+            
+            if (reason.length < 20) {
+                e.preventDefault();
+                alert('Please provide a detailed reason (minimum 20 characters)');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerHTML = '<div class="spinner" style="display: inline-block; margin-right: 8px;"></div> Submitting...';
+            submitBtn.disabled = true;
+        });
+
+        // Set min date to today
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.querySelectorAll('input[type="date"]').forEach(input => {
+                input.setAttribute('min', today);
+            });
+        });
+    </script>
+</body>
+</html>

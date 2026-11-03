@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Dashboard - Consups</title>
+    {% load static %}
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Employee Dashboard CSS (preserved) -->
+    <link rel="stylesheet" href="{% static 'css/employee.css' %}">
+    <style>
+        /* Additional styles for clock functionality - keeping original theme */
+        .clock-status-card {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.3);
+        }
+        
+        .clock-time {
+            font-size: 42px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        
+        .clock-date {
+            opacity: 0.9;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        
+        .shift-info {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            padding: 18px 25px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .shift-info div {
+            margin-bottom: 8px;
+        }
+        
+        .shift-info div:last-child {
+            margin-bottom: 0;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .status-present { background: #d1fae5; color: #065f46; }
+        .status-late { background: #fee2e2; color: #991b1b; }
+        .status-halfday { background: #fed7aa; color: #9a3412; }
+        .status-break { background: #dbeafe; color: #1e40af; }
+        
+        /* Keep Clock In and Clock Out visible side by side. */
+        .action-buttons-container {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .action-buttons-container > form {
+            margin: 0;
+            min-width: 0;
+        }
+
+        @media (max-width: 480px) {
+            .action-buttons-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .btn-action {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .btn-clock-in {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-clock-out {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-end-break {
+            background: #f97316;
+            color: white;
+        }
+        
+        .btn-break {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .btn-action:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-action:active {
+            transform: translateY(0);
+        }
+        
+        .btn-action i {
+            font-size: 20px;
+        }
+        
+        .btn-action:focus-visible {
+            outline: 3px solid #60a5fa;
+            outline-offset: 3px;
+        }
+
+        /* Disabled actions stay visible and keep their identifying color. */
+        .btn-action:disabled,
+        .btn-action-disabled {
+            cursor: not-allowed !important;
+            opacity: 0.6;
+            transform: none !important;
+            box-shadow: none;
+        }
+        
+        .break-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .break-option {
+            background: #f8fafc;
+            padding: 20px 15px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .break-option:hover {
+            border-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .break-option.selected {
+            border-color: #2563eb;
+            background: #e0e7ff;
+        }
+        
+        .break-option i {
+            font-size: 32px;
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+        
+        .break-option div {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .break-option small {
+            color: #64748b;
+        }
+        
+        .toast-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .toast-success { background: #10b981; }
+        .toast-error { background: #ef4444; }
+        .toast-warning { background: #f59e0b; }
+        .toast-info { background: #3b82f6; }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .break-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            display: block;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .timer {
+            font-size: 32px;
+            font-weight: 700;
+            color: #f59e0b;
+            margin: 15px 0;
+            font-family: monospace;
+        }
+        
+        .active-break-card {
+            background: #fef3c7;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 2px solid #f59e0b;
+            animation: pulse 2s infinite;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+        
+        .attendance-summary {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .summary-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+        
+        .summary-label {
+            color: #64748b;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        
+        .summary-value {
+            font-weight: 700;
+            font-size: 20px;
+            color: #1e293b;
+        }
+        
+        .breaks-list {
+            margin-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+        
+        .break-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .break-type {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .break-duration {
+            color: #64748b;
+        }
+        
+        .break-warning {
+            color: #f59e0b;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Messages from Django -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="toast-message toast-{{ message.tags }}" id="toast-{{ forloop.counter }}">
+                {{ message }}
+            </div>
+            <script>
+                setTimeout(() => {
+                    document.getElementById('toast-{{ forloop.counter }}')?.remove();
+                }, 5000);
+            </script>
+        {% endfor %}
+    {% endif %}
+
+     <div class="dashboard-wrapper">
+    
+  <!-- Include Admin Sidebar -->
+        {% include 'employee_sidebar.html' %}
+
+        <!-- Main Content -->
+        <main class="employee-main">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Welcome back, {{ user.first_name|default:user.username }}! 👋</h1>
+                </div>
+                <div class="welcome-widget">
+                    <div class="date-display">
+                        {% now "l, F j, Y" %}
+                    </div>
+                    <div class="notification-icon">
+                        <i class="far fa-bell"></i>
+                        <span class="notification-badge">5</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== 1. CLOCK STATUS CARD ===== -->
+            <div class="clock-status-card">
+                <div>
+                    <div class="clock-time" id="liveClock">{{ now|time:"h:i:s A" }}</div>
+                    <div class="clock-date">{{ now|date:"l, F j, Y" }}</div>
+                </div>
+                <div class="shift-info">
+                    <div><i class="fas fa-clock"></i> <strong>Shift:</strong> {{ employee.shift_start_time|time:"h:i A" }} - {{ employee.shift_end_time|time:"h:i A" }}</div>
+                    {% if attendance %}
+                        <div style="margin-top: 10px;">
+                            <span class="status-badge 
+                                {% if attendance.status == 'present' %}status-present
+                                {% elif attendance.status == 'late' %}status-late
+                                {% elif attendance.status == 'half_day' %}status-halfday
+                                {% endif %}">
+                                {{ attendance.get_status_display }}
+                                {% if attendance.late_minutes > 0 %} ({{ attendance.late_minutes }}m late){% endif %}
+                            </span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- ===== 2. CLOCK IN / CLOCK OUT (ALWAYS VISIBLE) ===== -->
+            <div class="action-buttons-container" id="actionButtonsContainer">
+                <form method="post" action="{% url 'clock_in' %}">
+                    {% csrf_token %}
+                    <button type="submit" id="clockInButton" class="btn-action btn-clock-in"
+                            {% if not employee or attendance.check_in or attendance.check_out %}disabled{% endif %}>
+                        <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
+                        <span>Clock In</span>
+                    </button>
+                </form>
+                <form method="post" action="{% url 'clock_out' %}">
+                    {% csrf_token %}
+                    <button type="submit" id="clockOutButton" class="btn-action btn-clock-out"
+                            {% if not employee or not attendance.check_in or attendance.check_out %}disabled{% endif %}>
+                        <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                        <span>Clock Out</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- ===== 3. BREAK OUT BUTTON & TIMER (If on break) - Additional visual feedback ===== -->
+            {% if active_break %}
+                <div class="active-break-card">
+                    <div style="display: flex; align-items: center; gap: 20px; flex: 1;">
+                        <div>
+                            <i class="fas fa-coffee" style="color: #f59e0b; font-size: 40px;"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <h3 style="color: #92400e; margin-bottom: 5px;">{{ active_break.get_break_type_display }}</h3>
+                            <div class="timer" id="breakTimer" data-start="{{ active_break.start_time|date:'U' }}">Loading...</div>
+                        </div>
+                    </div>
+                    <form method="post" action="{% url 'end_break' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-action" style="background: #ef4444; color: white; padding: 12px 24px; width: auto;">
+                            <i class="fas fa-stop"></i> End Break
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
+
+            <!-- ===== 4. BREAK OPTIONS PANEL (ALWAYS VISIBLE) ===== -->
+            <div class="break-panel" id="breakPanel">
+                <h3 style="margin-bottom: 20px; color: #1e293b;">☕ Select Break Type</h3>
+                <form method="post" action="{% url 'start_break' %}" id="breakForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="break_type" id="selectedBreakType" value="tea">
+                    
+                    <div class="break-options">
+                        <div class="break-option" onclick="selectBreak('tea')" id="breakTea">
+                            <i class="fas fa-mug-hot"></i>
+                            <div>Tea Break</div>
+                            <small>15 min</small>
+                        </div>
+                        <div class="break-option" onclick="selectBreak('lunch')" id="breakLunch">
+                            <i class="fas fa-utensils"></i>
+                            <div>Lunch Break</div>
+                            <small>60 min</small>
+                        </div>
+                        <div class="break-option" onclick="selectBreak('personal')" id="breakPersonal">
+                            <i class="fas fa-user"></i>
+                            <div>Personal</div>
+                            <small>15 min</small>
+                        </div>
+                        <div class="break-option" onclick="selectBreak('other')" id="breakOther">
+                            <i class="fas fa-ellipsis-h"></i>
+                            <div>Other</div>
+                            <small>15 min</small>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 15px; margin-top: 20px;">
+                        <button type="submit" class="btn-action btn-break" style="flex: 1;" {% if not employee or active_break or not attendance.check_in or attendance.check_out %}disabled{% endif %}>
+                            <i class="fas fa-play"></i> Start Selected Break
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ===== 5. TODAY'S ATTENDANCE SUMMARY ===== -->
+            {% if attendance %}
+            <div class="attendance-summary">
+                <h3 style="color: #1e293b; margin-bottom: 15px;">📊 Today's Attendance Summary</h3>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-label">Check In</div>
+                        <div class="summary-value">{{ attendance.check_in|time:"h:i A"|default:"-" }}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Check Out</div>
+                        <div class="summary-value">{{ attendance.check_out|time:"h:i A"|default:"-" }}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">Total Hours</div>
+                        <div class="summary-value">{{ attendance.total_working_hours|default:"0" }} hrs</div>
+                    </div>
+                </div>
+                
+                <!-- Breaks today -->
+                {% with breaks=attendance.breaks.all %}
+                    {% if breaks %}
+                        <div class="breaks-list">
+                            <h4 style="color: #1e293b; margin-bottom: 10px;">☕ Breaks Today</h4>
+                            {% for break in breaks %}
+                                <div class="break-item">
+                                    <div>
+                                        <span class="break-type">{{ break.get_break_type_display }}</span>
+                                        {% if break.requires_reason %}
+                                            <i class="fas fa-exclamation-triangle break-warning" title="Reason: {{ break.reason }}"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <span class="break-duration">{{ break.duration_minutes }} min</span>
+                                        <small style="color: #94a3b8; margin-left: 10px;">{{ break.start_time|time:"h:i A" }}</small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+            </div>
+            {% endif %}
+
+            <!-- ===== 6. DASHBOARD WIDGETS (COMPLETELY UNCHANGED) ===== -->
+            <div class="dashboard-content">
+                <!-- My Tasks Widget -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-check-circle" style="margin-right: 8px;"></i> My Tasks</h2>
+                        <a href="#" style="color: var(--primary-color); font-size: 14px;">View All</a>
+                    </div>
+                    <ul class="task-list">
+                        <li class="task-item">
+                            <input type="checkbox" class="task-checkbox">
+                            <div class="task-content">
+                                <div class="task-title">Complete Q4 Report</div>
+                                <div class="task-meta">Due Today · 2:00 PM</div>
+                            </div>
+                            <span class="task-priority priority-high">High</span>
+                        </li>
+                        <li class="task-item">
+                            <input type="checkbox" class="task-checkbox">
+                            <div class="task-content">
+                                <div class="task-title">Review team timesheets</div>
+                                <div class="task-meta">Due Tomorrow · 5:00 PM</div>
+                            </div>
+                            <span class="task-priority priority-medium">Medium</span>
+                        </li>
+                        <li class="task-item">
+                            <input type="checkbox" class="task-checkbox">
+                            <div class="task-content">
+                                <div class="task-title">Update project documentation</div>
+                                <div class="task-meta">Due in 3 days</div>
+                            </div>
+                            <span class="task-priority priority-low">Low</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Projects Widget -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-project-diagram" style="margin-right: 8px;"></i> Projects</h2>
+                        <a href="#" style="color: var(--primary-color); font-size: 14px;">All Projects</a>
+                    </div>
+                    <div class="projects-grid">
+                        <div class="project-item">
+                            <div class="project-info">
+                                <h4>Website Redesign</h4>
+                                <div class="project-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 75%;"></div>
+                                    </div>
+                                </div>
+                                <span style="color: var(--text-muted); font-size: 12px;">75% Complete</span>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <div class="project-info">
+                                <h4>Mobile App Development</h4>
+                                <div class="project-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 45%;"></div>
+                                    </div>
+                                </div>
+                                <span style="color: var(--text-muted); font-size: 12px;">45% Complete</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendar Widget -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-calendar-alt" style="margin-right: 8px;"></i> Calendar</h2>
+                        <a href="#" style="color: var(--primary-color); font-size: 14px;">View Full</a>
+                    </div>
+                    <div class="calendar-mini">
+                        <div class="calendar-header">
+                            <button class="period-btn" style="padding: 4px 8px;">←</button>
+                            <span>March 2026</span>
+                            <button class="period-btn" style="padding: 4px 8px;">→</button>
+                        </div>
+                        <div class="calendar-days">
+                            <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                        </div>
+                        <div class="calendar-dates">
+                            <span class="calendar-date">1</span>
+                            <span class="calendar-date">2</span>
+                            <span class="calendar-date">3</span>
+                            <span class="calendar-date">4</span>
+                            <span class="calendar-date">5</span>
+                            <span class="calendar-date">6</span>
+                            <span class="calendar-date">7</span>
+                            <span class="calendar-date">8</span>
+                            <span class="calendar-date">9</span>
+                            <span class="calendar-date">10</span>
+                            <span class="calendar-date">11</span>
+                            <span class="calendar-date">12</span>
+                            <span class="calendar-date has-event">13</span>
+                            <span class="calendar-date">14</span>
+                            <span class="calendar-date">15</span>
+                            <span class="calendar-date">16</span>
+                            <span class="calendar-date">17</span>
+                            <span class="calendar-date">18</span>
+                            <span class="calendar-date">19</span>
+                            <span class="calendar-date">20</span>
+                            <span class="calendar-date">21</span>
+                            <span class="calendar-date">22</span>
+                            <span class="calendar-date">23</span>
+                            <span class="calendar-date">24</span>
+                            <span class="calendar-date">25</span>
+                            <span class="calendar-date">26</span>
+                            <span class="calendar-date">27</span>
+                            <span class="calendar-date">28</span>
+                            <span class="calendar-date">29</span>
+                            <span class="calendar-date">30</span>
+                            <span class="calendar-date">31</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages Widget -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-envelope" style="margin-right: 8px;"></i> Recent Messages</h2>
+                        <a href="#" style="color: var(--primary-color); font-size: 14px;">All</a>
+                    </div>
+                    <ul class="message-list">
+                        <li class="message-item">
+                            <div class="message-avatar">JD</div>
+                            <div class="message-content">
+                                <h4>John Doe <span style="color: var(--text-muted); font-size: 11px;">· 2h ago</span></h4>
+                                <p>When is the team meeting scheduled?</p>
+                            </div>
+                        </li>
+                        <li class="message-item">
+                            <div class="message-avatar">AS</div>
+                            <div class="message-content">
+                                <h4>Alice Smith <span style="color: var(--text-muted); font-size: 11px;">· 5h ago</span></h4>
+                                <p>I've completed the task you assigned</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Team Directory Widget -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-users" style="margin-right: 8px;"></i> Team Members</h2>
+                        <a href="#" style="color: var(--primary-color); font-size: 14px;">View All</a>
+                    </div>
+                    <div class="team-grid">
+                        <div class="team-member">
+                            <div class="member-avatar">JD</div>
+                            <div class="member-name">John Doe</div>
+                            <div class="member-role">Developer</div>
+                        </div>
+                        <div class="team-member">
+                            <div class="member-avatar">AS</div>
+                            <div class="member-name">Alice Smith</div>
+                            <div class="member-role">Designer</div>
+                        </div>
+                        <div class="team-member">
+                            <div class="member-avatar">RJ</div>
+                            <div class="member-name">Robert Johnson</div>
+                            <div class="member-role">Manager</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Feed Widget -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-stream" style="margin-right: 8px;"></i> Activity Feed</h2>
+                    </div>
+                    <ul class="activity-feed">
+                        <li class="activity-item">
+                            <div class="activity-icon"><i class="fas fa-check"></i></div>
+                            <div class="activity-desc">
+                                Task "Q4 Report" completed
+                                <div class="activity-time">10 minutes ago</div>
+                            </div>
+                        </li>
+                        <li class="activity-item">
+                            <div class="activity-icon"><i class="fas fa-clock"></i></div>
+                            <div class="activity-desc">
+                                Clocked in
+                                <div class="activity-time">1 hour ago</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Document Library Widget -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-folder" style="margin-right: 8px;"></i> Recent Documents</h2>
+                        <a href="#" style="color: var(--primary-color); font-size: 14px;">Browse</a>
+                    </div>
+                    <ul class="document-list">
+                        <li class="document-item">
+                            <i class="fas fa-file-pdf document-icon"></i>
+                            <div class="document-info">
+                                <h4>Q4 Report 2025.pdf</h4>
+                                <p>Updated 2 days ago · 2.4 MB</p>
+                            </div>
+                        </li>
+                        <li class="document-item">
+                            <i class="fas fa-file-word document-icon"></i>
+                            <div class="document-info">
+                                <h4>Employee Handbook.docx</h4>
+                                <p>Updated 1 week ago · 1.8 MB</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Training Widget -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-graduation-cap" style="margin-right: 8px;"></i> Training</h2>
+                    </div>
+                    <ul class="training-list">
+                        <li class="training-item">
+                            <div class="training-title">Leadership Essentials</div>
+                            <div class="training-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 60%;"></div>
+                                </div>
+                                <span>60%</span>
+                            </div>
+                        </li>
+                        <li class="training-item">
+                            <div class="training-title">Project Management</div>
+                            <div class="training-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 30%;"></div>
+                                </div>
+                                <span>30%</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+
+    <!-- JavaScript -->
+    <script>
+        // Live Clock Update
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit',
+                hour12: true 
+            });
+            const clockElement = document.getElementById('liveClock');
+            if (clockElement) {
+                clockElement.textContent = timeStr;
+            }
+        }
+        setInterval(updateClock, 1000);
+
+        // Break Selection Function
+        function selectBreak(type) {
+            // Remove selected class from all
+            document.querySelectorAll('.break-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Add selected class to chosen one
+            const elementId = 'break' + type.charAt(0).toUpperCase() + type.slice(1);
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.classList.add('selected');
+            }
+            
+            // Set hidden input
+            document.getElementById('selectedBreakType').value = type;
+        }
+
+        // Break Timer (if on break)
+        const breakTimer = document.getElementById('breakTimer');
+        if (breakTimer) {
+            const startTime = parseInt(breakTimer.dataset.start) * 1000;
+            
+            function updateBreakTimer() {
+                const now = new Date().getTime();
+                const diff = now - startTime;
+                
+                const minutes = Math.floor(diff / 60000);
+                const seconds = Math.floor((diff % 60000) / 1000);
+                
+                breakTimer.textContent = `${minutes}m ${seconds}s`;
+            }
+            
+            setInterval(updateBreakTimer, 1000);
+            updateBreakTimer(); // Initial call
+        }
+
+        // Auto-hide toasts after 5 seconds
+        setTimeout(() => {
+            document.querySelectorAll('.toast-message').forEach(toast => {
+                toast.remove();
+            });
+        }, 5000);
+
+        // Set default selected break on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Select Tea Break by default
+            const defaultTea = document.getElementById('breakTea');
+            if(defaultTea) defaultTea.classList.add('selected');
+        });
+    </script>
+</body>
+</html>

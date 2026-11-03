@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management | Consups</title>
+    {% load static %}
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/employee_management.css' %}">       
+</head>
+<body>
+    <div class="dashboard-wrapper">
+    
+  <!-- Include Admin Sidebar -->
+        {% include 'admin_sidebar.html' %}
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Employee Management</h1>
+                    <p>Manage your organization's employees</p>
+                </div>
+                <div class="admin-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search employees..." id="searchEmployee">
+                    </div>
+                    <div class="notification-icon">
+                        <i class="far fa-bell"></i>
+                        <span class="notification-badge">8</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Management Header -->
+            <div class="management-header">
+                <div>
+                    <h2 style="font-size: 20px; color: var(--text-primary);">All Employees</h2>
+                </div>
+                <button class="add-employee-btn" id="addEmployeeBtn">
+                    <i class="fas fa-plus"></i>
+                    <span>Add New Employee</span>
+                </button>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label>Department</label>
+                    <select id="departmentFilter">
+                        <option value="">All Departments</option>
+                        <option value="engineering">Engineering</option>
+                        <option value="sales">Sales</option>
+                        <option value="marketing">Marketing</option>
+                        <option value="hr">Human Resources</option>
+                        <option value="finance">Finance</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Employment Type</label>
+                    <select id="employmentFilter">
+                        <option value="">All Types</option>
+                        <option value="fulltime">Full Time</option>
+                        <option value="parttime">Part Time</option>
+                        <option value="contract">Contract</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select id="statusFilter">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="onboarding">Onboarding</option>
+                    </select>
+                </div>
+            </div>
+
+           <!-- Employees Table -->
+            <div class="employees-table-container">
+                <table class="employees-table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>Position</th>
+                            <th>Employment Type</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employeesTableBody">
+                        <!-- Employee rows will be populated here -->
+                        {% if employees %}
+                            {% for employee in employees %}
+                            <tr data-employee-id="{{ employee.id }}">
+                                <td>
+                                    <div class="employee-info">
+                                        <div class="employee-avatar">{{ employee.name|make_list|first }}{{ employee.name|make_list|last }}</div>
+                                        <div class="employee-details">
+                                            <div class="employee-name">{{ employee.name }}</div>
+                                            <div class="employee-email">{{ employee.email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="department-cell">{{ employee.department }}</td>
+                                <td class="position-cell">{{ employee.position|default:"Staff" }}</td>
+                                <td class="employment-cell">
+                                    <span class="employee-badge badge-fulltime">
+                                        {% if employee.employment_type == 'fulltime' %}Full Time
+                                        {% elif employee.employment_type == 'parttime' %}Part Time
+                                        {% elif employee.employment_type == 'contract' %}Contract
+                                        {% elif employee.employment_type == 'permanent' %}Permanent
+                                        {% elif employee.employment_type == 'intern' %}Intern
+                                        {% else %}Full Time
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td class="status-cell">
+                                    <span class="status-badge 
+                                        {% if employee.status == 'active' %}active
+                                        {% elif employee.status == 'inactive' %}inactive
+                                        {% elif employee.status == 'onboarding' %}onboarding
+                                        {% else %}active{% endif %}">
+                                        {% if employee.status %}{{ employee.status|title }}{% else %}Active{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="{% url 'employee_detail' employee.id %}" class="action-btn view-btn" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'employee_detail' employee.id %}?edit=true" class="action-btn edit-btn" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button class="action-btn delete-btn" onclick="deleteEmployee({{ employee.id }})" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 40px;">
+                                    <i class="fas fa-users" style="font-size: 48px; color: #ccc;"></i>
+                                    <p style="margin-top: 10px; color: #666;">No employees found. Add some employees first.</p>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <button class="page-btn"><i class="fas fa-chevron-left"></i></button>
+                <button class="page-btn active">1</button>
+                <button class="page-btn">2</button>
+                <button class="page-btn">3</button>
+                <button class="page-btn">4</button>
+                <button class="page-btn">5</button>
+                <button class="page-btn"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Employee Modal -->
+    <div class="modal" id="employeeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Employee</h2>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="employeeForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>First Name</label>
+                            <input type="text" id="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <input type="text" id="lastName" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="phone" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Department</label>
+                            <select id="department" required>
+                                <option value="">Select Department</option>
+                                <option value="engineering">Engineering</option>
+                                <option value="sales">Sales</option>
+                                <option value="marketing">Marketing</option>
+                                <option value="hr">Human Resources</option>
+                                <option value="finance">Finance</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Position</label>
+                            <input type="text" id="position" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Employment Type</label>
+                            <select id="employmentType" required>
+                                <option value="">Select Type</option>
+                                <option value="fulltime">Full Time</option>
+                                <option value="parttime">Part Time</option>
+                                <option value="contract">Contract</option>
+                                <option value="permanent">Permanent</option>
+                                <option value="intern">Intern</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select id="status" required>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="onboarding">Onboarding</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <textarea id="address" rows="2"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Date of Birth</label>
+                            <input type="date" id="dob">
+                        </div>
+                        <div class="form-group">
+                            <label>Join Date</label>
+                            <input type="date" id="joinDate" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Emergency Contact</label>
+                        <input type="text" id="emergencyContact">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveEmployee()">Save Employee</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>Confirm Delete</h2>
+                <button class="close-modal" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary);">Are you sure you want to delete this employee? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Modal functionality
+    const employeeModal = document.getElementById('employeeModal');
+    const deleteModal = document.getElementById('deleteModal');
+    let currentEmployeeId = null;
+    let isEditing = false;
+
+    // CSRF token setup for AJAX
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+
+    function openModal() {
+        employeeModal.classList.add('active');
+    }
+
+    function closeModal() {
+        employeeModal.classList.remove('active');
+        document.getElementById('employeeForm').reset();
+        isEditing = false;
+        currentEmployeeId = null;
+        document.getElementById('modalTitle').textContent = 'Add New Employee';
+    }
+
+    function openDeleteModal(id) {
+        currentEmployeeId = id;
+        deleteModal.classList.add('active');
+    }
+
+    function closeDeleteModal() {
+        deleteModal.classList.remove('active');
+        currentEmployeeId = null;
+    }
+
+    // Add Employee button
+    document.getElementById('addEmployeeBtn').addEventListener('click', () => {
+        isEditing = false;
+        document.getElementById('modalTitle').textContent = 'Add New Employee';
+        document.getElementById('employeeForm').reset();
+        openModal();
+    });
+
+    // Edit Employee function
+    function editEmployee(id) {
+        isEditing = true;
+        currentEmployeeId = id;
+        document.getElementById('modalTitle').textContent = 'Edit Employee';
+        
+        fetch(`/api/employee/${id}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const emp = data.employee;
+                    const nameParts = emp.name.split(' ');
+                    document.getElementById('firstName').value = nameParts[0] || '';
+                    document.getElementById('lastName').value = nameParts.slice(1).join(' ') || '';
+                    document.getElementById('email').value = emp.email;
+                    document.getElementById('phone').value = emp.phone || '';
+                    document.getElementById('department').value = emp.department || '';
+                    document.getElementById('position').value = emp.position || '';
+                    document.getElementById('employmentType').value = emp.employment_type || 'fulltime';
+                    document.getElementById('status').value = emp.status || 'active';
+                    document.getElementById('address').value = emp.address || '';
+                    document.getElementById('dob').value = emp.dob || '';
+                    document.getElementById('joinDate').value = emp.join_date || '';
+                    document.getElementById('emergencyContact').value = emp.emergency_contact || '';
+                    
+                    openModal();
+                } else {
+                    alert('Error loading employee data: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error loading employee data');
+            });
+    }
+
+    // Delete Employee function
+    function deleteEmployee(id) {
+        if (confirm('Are you sure you want to delete this employee? This action cannot be undone.')) {
+            const btn = event.currentTarget;
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+            
+            fetch(`/api/employee/delete/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Employee deleted successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Could not delete employee'));
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error deleting employee');
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            });
+        }
+    }
+
+    // Save Employee function
+    function saveEmployee() {
+        const form = document.getElementById('employeeForm');
+        if (!form.checkValidity()) {
+            alert('Please fill all required fields');
+            return;
+        }
+
+        const firstName = document.getElementById('firstName').value;
+        const lastName = document.getElementById('lastName').value;
+        const joinDate = document.getElementById('joinDate').value;
+        
+        let formattedJoinDate = joinDate;
+        if (joinDate) {
+            const date = new Date(joinDate);
+            formattedJoinDate = date.toISOString().split('T')[0];
+        }
+        
+        const formData = {
+            name: firstName + ' ' + lastName,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            department: document.getElementById('department').value,
+            position: document.getElementById('position').value || 'Staff',
+            employment_type: document.getElementById('employmentType').value,
+            status: document.getElementById('status').value,
+            present_address: document.getElementById('address').value,
+            date_of_birth: document.getElementById('dob').value,
+            join_date: formattedJoinDate || new Date().toISOString().split('T')[0],
+            emergency_contact_name: document.getElementById('emergencyContact').value,
+            salary: 50000
+        };
+
+        const url = isEditing ? `/api/employee/update/${currentEmployeeId}/` : '/api/employee/add/';
+        
+        const saveBtn = event.target;
+        const originalText = saveBtn.textContent;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        saveBtn.disabled = true;
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Employee saved successfully!');
+                closeModal();
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Could not save employee'));
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error saving employee');
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+        });
+    }
+
+    // Search functionality
+    document.getElementById('searchEmployee').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('#employeesTableBody tr');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+    });
+
+    // Filter functionality
+    function applyFilters() {
+        const department = document.getElementById('departmentFilter').value;
+        const employment = document.getElementById('employmentFilter').value;
+        const status = document.getElementById('statusFilter').value;
+        
+        const rows = document.querySelectorAll('#employeesTableBody tr');
+        
+        rows.forEach(row => {
+            let show = true;
+            
+            if (department) {
+                const dept = row.cells[1].textContent.toLowerCase();
+                if (!dept.includes(department.toLowerCase())) show = false;
+            }
+            
+            if (employment && show) {
+                const empType = row.cells[3].querySelector('span').textContent.toLowerCase().replace(' ', '');
+                if (!empType.includes(employment.toLowerCase())) show = false;
+            }
+            
+            if (status && show) {
+                const statusText = row.cells[4].querySelector('span').textContent.toLowerCase();
+                if (!statusText.includes(status.toLowerCase())) show = false;
+            }
+            
+            row.style.display = show ? '' : 'none';
+        });
+    }
+
+    document.getElementById('departmentFilter').addEventListener('change', applyFilters);
+    document.getElementById('employmentFilter').addEventListener('change', applyFilters);
+    document.getElementById('statusFilter').addEventListener('change', applyFilters);
+
+    // Check for updates from detail page
+    window.addEventListener('load', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('updated') === 'true') {
+            // Show success message
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success';
+            alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; padding: 15px 20px; background: #10b981; color: white; border-radius: 8px; z-index: 1000;';
+            alertDiv.innerHTML = '<i class="fas fa-check-circle"></i> Employee updated successfully!';
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+                // Remove updated parameter from URL
+                const url = new URL(window.location);
+                url.searchParams.delete('updated');
+                window.history.replaceState({}, '', url);
+            }, 3000);
+        }
+
+        // Check for status updates via localStorage
+        const updatedEmployees = JSON.parse(localStorage.getItem('updated_employees') || '{}');
+        const currentTime = Date.now();
+        
+        Object.keys(updatedEmployees).forEach(empId => {
+            const updateTime = updatedEmployees[empId];
+            // If update was in last 5 seconds, refresh
+            if (currentTime - updateTime < 5000) {
+                location.reload();
+                return;
+            }
+        });
+        
+        // Clear old updates
+        localStorage.removeItem('updated_employees');
+    });
+
+    // Close modals when clicking outside
+    window.addEventListener('click', (e) => {
+        if (e.target === employeeModal) {
+            closeModal();
+        }
+        if (e.target === deleteModal) {
+            closeDeleteModal();
+        }
+    });
+
+    
+    </script>
+</body>
+</html>

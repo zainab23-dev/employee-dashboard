@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ task.title }} | My Task</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f1f5f9; }
+        .dashboard-wrapper { display: flex; }
+        .sidebar { width: 280px; background: white; height: 100vh; position: fixed; }
+        .main-content { flex: 1; margin-left: 280px; padding: 30px; }
+
+        .top-bar {
+            background: white; border-radius: 15px; padding: 20px 30px;
+            margin-bottom: 30px; display: flex; justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .btn-primary {
+            background: #2563eb; color: white; padding: 10px 20px;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-secondary {
+            background: #e2e8f0; color: #1e293b; padding: 10px 20px;
+            border: none; border-radius: 8px; font-weight: 500; cursor: pointer;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        }
+
+        .task-container {
+            display: grid; grid-template-columns: 2fr 1fr; gap: 20px;
+        }
+
+        .task-card, .side-card {
+            background: white; border-radius: 15px; padding: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .status-options {
+            display: flex; gap: 10px; margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .status-btn {
+            flex: 1; padding: 10px; border: 2px solid #e2e8f0;
+            border-radius: 8px; background: white; cursor: pointer;
+            transition: all 0.3s;
+        }
+        .status-btn:hover {
+            background: #f8fafc;
+        }
+        .status-btn.active { 
+            background: #2563eb; 
+            color: white; 
+            border-color: #2563eb; 
+        }
+
+        .progress-slider {
+            width: 100%; margin: 20px 0;
+        }
+
+        .comment-section {
+            margin-top: 30px;
+        }
+        .comment-input {
+            width: 100%; padding: 12px; border: 2px solid #e2e8f0;
+            border-radius: 8px; margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .comment-input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        /* Handoff Section Styles */
+        .handoff-section {
+            background: #fef3c7;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .handoff-section h4 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            color: #92400e;
+        }
+        
+        .handoff-section p {
+            font-size: 13px;
+            color: #92400e;
+            margin-bottom: 15px;
+        }
+        
+        .handoff-section select,
+        .handoff-section textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #fde68a;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+        }
+        
+        .handoff-section select:focus,
+        .handoff-section textarea:focus {
+            outline: none;
+            border-color: #f59e0b;
+        }
+        
+        .handoff-section .btn-handoff {
+            width: 100%;
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .handoff-section .btn-handoff:hover:not(:disabled) {
+            background: #d97706;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+        
+        .handoff-section .btn-handoff:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #d1d5db;
+        }
+
+        .info-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            margin-top: 5px;
+        }
+        
+        .info-badge.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .info-badge.warning {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        {% include 'employee_sidebar.html' %}
+        
+        <div class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 style="font-size: 24px;">{{ task.title }}</h1>
+                    <p style="color: #64748b;">{{ task.task_code }} · {{ task.project.title }}</p>
+                </div>
+                <a href="{% url 'employee_project_detail' task.project.project_code %}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Project
+                </a>
+            </div>
+
+            <div class="task-container">
+                <!-- Main Task Area -->
+                <div>
+                    <div class="task-card">
+                        <h3 style="margin-bottom: 15px;">Update Status</h3>
+                        <div class="status-options">
+                            <button class="status-btn {% if task.status == 'todo' %}active{% endif %}" 
+                                    onclick="updateStatus('todo')">📋 To Do</button>
+                            <button class="status-btn {% if task.status == 'in_progress' %}active{% endif %}" 
+                                    onclick="updateStatus('in_progress')">⚡ In Progress</button>
+                            <button class="status-btn {% if task.status == 'review' %}active{% endif %}" 
+                                    onclick="updateStatus('review')">👀 Review</button>
+                            <button class="status-btn {% if task.status == 'completed' %}active{% endif %}" 
+                                    onclick="updateStatus('completed')">✅ Completed</button>
+                        </div>
+
+                        <!-- Progress Slider -->
+                        <h3 style="margin-top: 20px;">Progress: <span id="progressValue">{{ task.progress }}%</span></h3>
+                        <input type="range" class="progress-slider" min="0" max="100" value="{{ task.progress }}"
+                               onchange="updateProgress(this.value)" id="progressSlider">
+
+                        <!-- Task Details -->
+                        <h3 style="margin-top: 20px;">Description</h3>
+                        <p style="color: #64748b; line-height: 1.6;">{{ task.description|default:"No description provided" }}</p>
+
+                        <!-- UPDATED: Handoff Section with improved UI -->
+                        <div class="handoff-section">
+                            <h4>
+                                <i class="fas fa-exchange-alt" style="color: #f59e0b;"></i> 
+                                Task Handoff
+                            </h4>
+                            
+                            <p>
+                                <i class="fas fa-info-circle"></i> 
+                                Pass this task to another team member
+                            </p>
+                            
+                            <!-- Available Members Count -->
+                            <div style="font-size: 11px; color: #92400e; margin-bottom: 10px; background: #fffbeb; padding: 8px; border-radius: 6px;">
+                                <i class="fas fa-users"></i> 
+                                Team members available: <strong>{{ available_members|length }}</strong>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-size: 12px; font-weight: 600; color: #92400e; margin-bottom: 5px;">
+                                    Select Member <span style="color: #ef4444;">*</span>
+                                </label>
+                                <select id="handoffMember">
+                                    <option value="">-- Choose team member --</option>
+                                    {% if available_members %}
+                                        {% for member in available_members %}
+                                        <option value="{{ member.id }}">
+                                            {{ member.get_full_name|default:member.username }} 
+                                            ({{ member.email }})
+                                            {% if member == task.project.team_leader %}👑 Team Leader{% endif %}
+                                        </option>
+                                        {% endfor %}
+                                    {% else %}
+                                        <option value="" disabled>No other members available</option>
+                                    {% endif %}
+                                </select>
+                                
+                                {% if not available_members %}
+                                <div class="info-badge warning" style="margin-top: 8px;">
+                                    <i class="fas fa-exclamation-triangle"></i> 
+                                    You are the only member in this project
+                                </div>
+                                {% else %}
+                                <div class="info-badge success" style="margin-top: 8px;">
+                                    <i class="fas fa-check-circle"></i> 
+                                    {{ available_members|length }} member(s) available for handoff
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-size: 12px; font-weight: 600; color: #92400e; margin-bottom: 5px;">
+                                    Handoff Notes
+                                </label>
+                                <textarea id="handoffNotes" rows="3" 
+                                          placeholder="Explain why you're handing off this task..."></textarea>
+                            </div>
+                            
+                            <button class="btn-handoff" onclick="requestHandoff()" 
+                                    {% if not available_members %}disabled{% endif %}>
+                                <i class="fas fa-paper-plane"></i> 
+                                {% if available_members %}Request Handoff{% else %}No Members Available{% endif %}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Comments Section -->
+                    <div class="task-card comment-section">
+                        <h3 style="margin-bottom: 15px;">
+                            <i class="fas fa-comments" style="color: #2563eb;"></i> 
+                            Discussion
+                        </h3>
+                        
+                        <form id="commentForm">
+                            {% csrf_token %}
+                            <input type="hidden" name="content_type" value="{{ content_type_id }}">
+                            <input type="hidden" name="object_id" value="{{ task.id }}">
+                            <textarea name="content" class="comment-input" rows="2" placeholder="Write a comment..."></textarea>
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-paper-plane"></i> Post Comment
+                            </button>
+                        </form>
+
+                        <div style="margin-top: 20px;">
+                            {% for comment in comments %}
+                            <div style="padding: 15px; border-bottom: 1px solid #e2e8f0;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <span style="font-weight: 600; color: #2563eb;">
+                                        <i class="fas fa-user-circle"></i> {{ comment.user.username }}
+                                    </span>
+                                    <span style="font-size: 11px; color: #64748b;">
+                                        <i class="far fa-clock"></i> {{ comment.created_at|timesince }} ago
+                                    </span>
+                                </div>
+                                <p style="margin-top: 5px; color: #1e293b;">{{ comment.content }}</p>
+                                
+                                {% for reply in comment.replies.all %}
+                                <div style="margin-left: 30px; margin-top: 10px; padding: 10px; background: #f8fafc; border-radius: 8px;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                                        <span style="font-weight: 600; color: #059669;">
+                                            <i class="fas fa-reply"></i> {{ reply.user.username }}
+                                        </span>
+                                        <span style="font-size: 10px; color: #64748b;">{{ reply.created_at|timesince }} ago</span>
+                                    </div>
+                                    <p style="margin-top: 3px;">{{ reply.content }}</p>
+                                </div>
+                                {% endfor %}
+                                
+                                <button style="margin-top: 8px; background: none; border: none; color: #64748b; font-size: 11px; cursor: pointer;"
+                                        onclick="showReplyForm({{ comment.id }})">
+                                    <i class="fas fa-reply"></i> Reply
+                                </button>
+                                
+                                <div id="reply-form-{{ comment.id }}" style="display: none; margin-top: 10px;">
+                                    <form class="reply-form" data-parent="{{ comment.id }}">
+                                        {% csrf_token %}
+                                        <textarea name="content" class="comment-input" rows="1" placeholder="Write reply..."></textarea>
+                                        <button type="submit" class="btn-primary" style="padding: 5px 10px; font-size: 12px;">
+                                            <i class="fas fa-reply"></i> Post Reply
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div style="text-align: center; padding: 30px; color: #94a3b8;">
+                                <i class="fas fa-comments fa-3x" style="margin-bottom: 10px;"></i>
+                                <p>No comments yet. Start the discussion!</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Side Panel -->
+                <div>
+                    <div class="side-card">
+                        <h4 style="margin-bottom: 15px; color: #1e293b;">
+                            <i class="fas fa-info-circle" style="color: #2563eb;"></i> 
+                            Task Info
+                        </h4>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <p><strong>Assigned to:</strong> 
+                                <span style="background: #e2e8f0; padding: 3px 8px; border-radius: 12px;">
+                                    {{ task.assigned_to.username }}
+                                </span>
+                            </p>
+                            <p><strong>Due date:</strong> 
+                                <span style="color: {% if task.is_overdue %}#ef4444{% else %}#059669{% endif %};">
+                                    <i class="far fa-calendar"></i> {{ task.due_date|date:"d M Y" }}
+                                    {% if task.is_overdue %}(Overdue){% endif %}
+                                </span>
+                            </p>
+                            <p><strong>Priority:</strong> 
+                                <span style="background: {% if task.priority == 'high' %}#fee2e2; color: #ef4444;
+                                                   {% elif task.priority == 'medium' %}#fef3c7; color: #f59e0b;
+                                                   {% else %}#dbeafe; color: #2563eb;{% endif %}
+                                                   padding: 3px 8px; border-radius: 12px;">
+                                    {{ task.get_priority_display }}
+                                </span>
+                            </p>
+                            <p><strong>Created:</strong> <i class="far fa-clock"></i> {{ task.created_at|date:"d M Y" }}</p>
+                            <p><strong>Status:</strong> 
+                                <span style="background: #e2e8f0; padding: 3px 8px; border-radius: 12px;">
+                                    {{ task.get_status_display }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="side-card" style="margin-top: 20px;">
+                        <h4 style="margin-bottom: 15px; color: #1e293b;">
+                            <i class="fas fa-project-diagram" style="color: #059669;"></i> 
+                            Project Info
+                        </h4>
+                        <p><strong>{{ task.project.title }}</strong></p>
+                        <p style="font-size: 13px; color: #64748b;">{{ task.project.project_code }}</p>
+                        <div style="margin-top: 10px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px;">
+                                <span>Overall Progress</span>
+                                <span>{{ task.project.progress }}%</span>
+                            </div>
+                            <div style="height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
+                                <div style="height: 100%; width: {{ task.project.progress }}%; background: #059669; border-radius: 3px;"></div>
+                            </div>
+                        </div>
+                        <p style="margin-top: 10px; font-size: 12px;">
+                            <i class="far fa-calendar"></i> Ends: {{ task.project.end_date|date:"d M Y" }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Update progress
+        function updateProgress(value) {
+            document.getElementById('progressValue').textContent = value + '%';
+            
+            fetch('{% url "update_task_progress" task.task_code %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `progress=${value}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    alert('Error updating progress');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to update progress');
+            });
+        }
+
+        // Update status
+        function updateStatus(status) {
+            fetch('{% url "update_task_progress" task.task_code %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `status=${status}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error updating status');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to update status');
+            });
+        }
+
+        // Request handoff - UPDATED with better validation
+        function requestHandoff() {
+            const memberId = document.getElementById('handoffMember').value;
+            const notes = document.getElementById('handoffNotes').value;
+            
+            if (!memberId) {
+                alert('Please select a team member');
+                document.getElementById('handoffMember').focus();
+                return;
+            }
+            
+            if (!confirm('Are you sure you want to handoff this task?')) {
+                return;
+            }
+            
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            button.disabled = true;
+            
+            fetch('{% url "request_task_handoff" task.task_code %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `to_user=${memberId}&notes=${encodeURIComponent(notes)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ Handoff requested successfully!');
+                    location.reload();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to request handoff');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        }
+
+        // Comment Form
+        document.getElementById('commentForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const button = this.querySelector('button[type="submit"]');
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Posting...';
+            button.disabled = true;
+            
+            fetch('{% url "add_comment" %}', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to post comment');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        });
+
+        // Reply Forms
+        document.querySelectorAll('.reply-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                formData.append('parent', this.dataset.parent);
+                
+                const button = this.querySelector('button[type="submit"]');
+                const originalText = button.innerHTML;
+                
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Posting...';
+                button.disabled = true;
+                
+                fetch('{% url "add_comment" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to post reply');
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                });
+            });
+        });
+
+        function showReplyForm(commentId) {
+            const form = document.getElementById('reply-form-' + commentId);
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

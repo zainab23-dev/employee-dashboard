@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ task.title }} | Task Details</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #f1f5f9; }
+        .dashboard-wrapper { display: flex; }
+        .sidebar { width: 280px; background: white; height: 100vh; position: fixed; }
+        .main-content { flex: 1; margin-left: 280px; padding: 30px; }
+
+        .top-bar {
+            background: white; border-radius: 15px; padding: 20px 30px;
+            margin-bottom: 30px; display: flex; justify-content: space-between;
+            align-items: center;
+        }
+
+        .task-container {
+            display: grid; grid-template-columns: 2fr 1fr; gap: 20px;
+        }
+
+        .task-card, .side-card {
+            background: white; border-radius: 15px; padding: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .task-header {
+            display: flex; justify-content: space-between; margin-bottom: 20px;
+        }
+        .task-code {
+            background: #e0e7ff; color: #2563eb; padding: 4px 12px;
+            border-radius: 20px; font-size: 13px; font-weight: 600;
+        }
+        .priority-badge {
+            padding: 4px 12px; border-radius: 20px; font-size: 12px;
+        }
+        .priority-low { background: #dbeafe; color: #1e40af; }
+        .priority-medium { background: #fef3c7; color: #92400e; }
+        .priority-high { background: #fee2e2; color: #991b1b; }
+
+        .info-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;
+            margin: 20px 0;
+        }
+
+        .progress-section {
+            margin: 20px 0; padding: 20px; background: #f8fafc;
+            border-radius: 12px;
+        }
+        .progress-bar {
+            height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; background: #2563eb; border-radius: 4px;
+        }
+
+        .handoff-card {
+            background: #fef3c7; border-left: 4px solid #f59e0b;
+            padding: 15px; border-radius: 8px; margin: 20px 0;
+        }
+
+        .btn-handoff {
+            background: #8b5cf6; color: white; padding: 10px;
+            border: none; border-radius: 8px; cursor: pointer;
+            width: 100%; margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        {% include 'admin_sidebar.html' %}
+        
+        <div class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 style="font-size: 24px;">{{ task.title }}</h1>
+                    <p style="color: #64748b;">{{ task.task_code }} · {{ task.project.title }}</p>
+                </div>
+                <a href="{% url 'admin_project_detail' task.project.project_code %}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+
+            <div class="task-container">
+                <!-- Main Task Details -->
+                <div>
+                    <div class="task-card">
+                        <div class="task-header">
+                            <span class="task-code">{{ task.task_code }}</span>
+                            <span class="priority-badge priority-{{ task.priority }}">
+                                {{ task.get_priority_display }}
+                            </span>
+                        </div>
+                        
+                        <p style="color: #64748b; line-height: 1.6;">{{ task.description }}</p>
+                        
+                        <div class="info-grid">
+                            <div>
+                                <div style="font-size: 12px; color: #64748b;">Assigned To</div>
+                                <div style="font-weight: 600;">{{ task.assigned_to.username|default:"Unassigned" }}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 12px; color: #64748b;">Due Date</div>
+                                <div style="font-weight: 600;">{{ task.due_date|date:"d M Y" }}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 12px; color: #64748b;">Status</div>
+                                <div style="font-weight: 600;">{{ task.get_status_display }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-section">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span>Progress</span>
+                                <span>{{ task.progress }}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ task.progress }}%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Handoff Section -->
+                        {% if task.status == 'handoff' %}
+                        <div class="handoff-card">
+                            <h4 style="margin-bottom: 10px;">🔄 Handoff Request</h4>
+                            <p><strong>From:</strong> {{ task.assigned_to.username }}</p>
+                            <p><strong>To:</strong> {{ task.handoff_to.username }}</p>
+                            <p><strong>Notes:</strong> {{ task.handoff_notes }}</p>
+                            <p><strong>Requested:</strong> {{ task.handoff_requested_at|timesince }} ago</p>
+                            
+                            {% if task.handoff_to == request.user %}
+                            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                <button class="btn-primary" onclick="respondToHandoff('accept')">Accept</button>
+                                <button class="btn-secondary" onclick="respondToHandoff('reject')">Reject</button>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Handoff History -->
+                        {% if handoffs %}
+                        <div style="margin-top: 20px;">
+                            <h4 style="margin-bottom: 10px;">Handoff History</h4>
+                            {% for handoff in handoffs %}
+                            <div style="padding: 8px; background: #f8fafc; border-radius: 8px; margin-bottom: 5px;">
+                                <span style="font-weight: 500;">{{ handoff.from_user.username }}</span>
+                                <i class="fas fa-arrow-right"></i>
+                                <span style="font-weight: 500;">{{ handoff.to_user.username }}</span>
+                                <span style="margin-left: 10px; font-size: 11px; color: #64748b;">{{ handoff.requested_at|timesince }} ago</span>
+                                <span style="margin-left: 10px; font-size: 11px; 
+                                    {% if handoff.status == 'accepted' %}color: #10b981;
+                                    {% elif handoff.status == 'rejected' %}color: #ef4444;
+                                    {% else %}color: #f59e0b;{% endif %}">
+                                    {{ handoff.get_status_display }}
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Side Panel -->
+                <div>
+                    <div class="side-card">
+                        <h4 style="margin-bottom: 15px;">Project Info</h4>
+                        <p><strong>{{ task.project.title }}</strong></p>
+                        <p style="font-size: 13px; color: #64748b;">{{ task.project.project_code }}</p>
+                        <p style="margin-top: 10px;">Progress: {{ task.project.progress }}%</p>
+                    </div>
+
+                    <div class="side-card">
+                        <h4 style="margin-bottom: 15px;">Team Members</h4>
+                        {% for member in team_members %}
+                        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                            <div style="width: 30px; height: 30px; background: #2563eb; color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                {{ member.username|first|upper }}
+                            </div>
+                            <div>
+                                <div style="font-weight: 500;">{{ member.username }}</div>
+                                <div style="font-size: 10px; color: #64748b;">{{ member.email }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if task.tags %}
+                    <div class="side-card">
+                        <h4 style="margin-bottom: 10px;">Tags</h4>
+                        {% for tag in task.tags.split %}
+                        <span style="background: #e2e8f0; padding: 4px 8px; border-radius: 12px; font-size: 11px; display: inline-block; margin: 2px;">
+                            {{ tag }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function respondToHandoff(action) {
+            const handoffId = '{{ handoffs.0.id }}'; // You'll need to pass this properly
+            const notes = prompt(`Enter ${action === 'accept' ? 'acceptance' : 'rejection'} notes:`);
+            if (notes !== null) {
+                fetch(`/handoffs/${handoffId}/respond/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: `action=${action}&notes=${encodeURIComponent(notes)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(`Handoff ${action}ed successfully`);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

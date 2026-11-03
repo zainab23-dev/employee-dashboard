@@ -1,0 +1,725 @@
+<!-- use for employee leave history page, showing leave balances, stats, and a table of past leave requests with filters and modals for details. -->
+
+<!DOCTYPE html>  
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Leave History | Consups</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f1f5f9;
+        }
+
+        .dashboard-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .employee-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .page-title h1 {
+            font-size: 24px;
+            color: #1e293b;
+        }
+
+        .page-title p {
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .date-display {
+            background: #f8fafc;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #2563eb;
+            font-weight: 500;
+        }
+
+        /* Leave Balance Cards */
+        .balance-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .balance-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+
+        .balance-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .balance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .balance-header i {
+            font-size: 32px;
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        .balance-annual i { background: #e0e7ff; color: #2563eb; }
+        .balance-sick i { background: #fee2e2; color: #991b1b; }
+        .balance-personal i { background: #fef3c7; color: #92400e; }
+        .balance-unpaid i { background: #e2e8f0; color: #475569; }
+
+        .balance-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .balance-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .balance-used {
+            font-size: 12px;
+            color: #ef4444;
+            margin-top: 5px;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-icon.pending { background: #fef3c7; color: #92400e; }
+        .stat-icon.approved { background: #d1fae5; color: #065f46; }
+        .stat-icon.rejected { background: #fee2e2; color: #991b1b; }
+        .stat-icon.total { background: #e0e7ff; color: #2563eb; }
+
+        .stat-info h3 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .stat-info p {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        /* Filters */
+        .filters-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr) auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .filter-group label {
+            display: block;
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .btn-filter {
+            background: #2563eb;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            height: 42px;
+        }
+
+        .btn-filter:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-reset {
+            background: #e2e8f0;
+            color: #1e293b;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            height: 42px;
+        }
+
+        /* Table */
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px;
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .leave-type-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .type-annual { background: #e0e7ff; color: #2563eb; }
+        .type-sick { background: #fee2e2; color: #991b1b; }
+        .type-personal { background: #fef3c7; color: #92400e; }
+        .type-unpaid { background: #e2e8f0; color: #475569; }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-approved { background: #d1fae5; color: #065f46; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+
+        .review-info {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 3px;
+        }
+
+        .btn-view {
+            background: #e0e7ff;
+            color: #2563eb;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .btn-view:hover {
+            background: #2563eb;
+            color: white;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 50px;
+            color: #94a3b8;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 30px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+            color: #1e293b;
+        }
+
+        .close {
+            font-size: 28px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .detail-label {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .reason-box {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        {% include 'employee_sidebar.html' %}
+        
+        <main class="employee-main">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>My Leave History</h1>
+                    <p>Track all your leave requests and their status</p>
+                </div>
+                <div class="date-display">
+                    <i class="far fa-calendar-alt"></i> {% now "l, d F Y" %}
+                </div>
+            </div>
+
+            <!-- Leave Balance Cards -->
+            <div class="balance-grid">
+                <div class="balance-card">
+                    <div class="balance-header balance-annual">
+                        <i class="fas fa-umbrella-beach"></i>
+                    </div>
+                    <div class="balance-value">{{ annual_balance }}</div>
+                    <div class="balance-label">Annual Leave</div>
+                    <!-- <div class="balance-used">{{ annual_used }} used</div> -->
+                </div>
+                <div class="balance-card">
+                    <div class="balance-header balance-sick">
+                        <i class="fas fa-hospital"></i>
+                    </div>
+                    <div class="balance-value">{{ sick_balance }}</div>
+                    <div class="balance-label">Sick Leave</div>
+                    <!-- <div class="balance-used">{{ sick_used }} used</div> -->
+                </div>
+                <div class="balance-card">
+                    <div class="balance-header balance-personal">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="balance-value">{{ personal_balance }}</div>
+                    <div class="balance-label">Personal Leave</div>
+                    <!-- <div class="balance-used">{{ personal_used }} used</div> -->
+                </div>
+                <div class="balance-card">
+                    <div class="balance-header balance-unpaid">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="balance-value">{{ unpaid_balance }}</div>
+                    <div class="balance-label">Unpaid Leave</div>
+                    <!-- <div class="balance-used">{{ unpaid_used }} used</div> -->
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon total">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ total_leaves }}</h3>
+                        <p>Total Applications</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon pending">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ pending_count }}</h3>
+                        <p>Pending</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon approved">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ approved_count }}</h3>
+                        <p>Approved</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon rejected">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ rejected_count }}</h3>
+                        <p>Rejected</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-section">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select class="filter-select" id="statusFilter" onchange="filterLeaves()">
+                            <option value="">All Status</option>
+                            <option value="pending" {% if current_status == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="approved" {% if current_status == 'approved' %}selected{% endif %}>Approved</option>
+                            <option value="rejected" {% if current_status == 'rejected' %}selected{% endif %}>Rejected</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Leave Type</label>
+                        <select class="filter-select" id="typeFilter" onchange="filterLeaves()">
+                            <option value="">All Types</option>
+                            <option value="annual" {% if current_type == 'annual' %}selected{% endif %}>Annual</option>
+                            <option value="sick" {% if current_type == 'sick' %}selected{% endif %}>Sick</option>
+                            <option value="personal" {% if current_type == 'personal' %}selected{% endif %}>Personal</option>
+                            <option value="unpaid" {% if current_type == 'unpaid' %}selected{% endif %}>Unpaid</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Year</label>
+                        <select class="filter-select" id="yearFilter" onchange="filterLeaves()">
+                            <option value="">All Years</option>
+                            {% for year in years %}
+                            <option value="{{ year }}" {% if current_year == year|stringformat:"s" %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-filter" onclick="applyFilters()">
+                            <i class="fas fa-filter"></i> Apply
+                        </button>
+                        <button class="btn-reset" onclick="resetFilters()">
+                            <i class="fas fa-redo"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leave History Table -->
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Leave Type</th>
+                            <th>Duration</th>
+                            <th>Days</th>
+                            <th>Applied On</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for leave in leaves %}
+                        <tr>
+                            <td>
+                                <span class="leave-type-badge type-{{ leave.leave_type }}">
+                                    <i class="fas fa-{% if leave.leave_type == 'annual' %}umbrella-beach{% elif leave.leave_type == 'sick' %}hospital{% elif leave.leave_type == 'personal' %}user{% else %}clock{% endif %}"></i>
+                                    {{ leave.get_leave_type_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {{ leave.start_date|date:"d M Y" }}<br>
+                                <small style="color: #64748b;">to {{ leave.end_date|date:"d M Y" }}</small>
+                            </td>
+                            <td><strong>{{ leave.days_count }}</strong> days</td>
+                            <td>{{ leave.created_at|date:"d M Y" }}<br><small>{{ leave.created_at|time:"h:i A" }}</small></td>
+                           
+                            <td>
+                                <span class="status-badge status-{{ leave.status }}">
+                                    {{ leave.get_status_display|upper }}
+                                </span>
+                            </td>
+                           
+                            
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="no-data">
+                                <i class="fas fa-calendar-times fa-3x"></i>
+                                <p style="margin-top: 15px;">No leave requests found</p>
+                                <a href="{% url 'apply_leave' %}" class="btn-filter" style="display: inline-block; margin-top: 15px; text-decoration: none;">
+                                    <i class="fas fa-plus"></i> Apply for Leave
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- View Reason Modal -->
+    <div class="modal" id="reasonModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Leave Reason</h2>
+                <span class="close" onclick="closeReasonModal()">&times;</span>
+            </div>
+            <div id="reasonContent" class="reason-box">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- View Review Modal -->
+    <div class="modal" id="reviewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Review Comments</h2>
+                <span class="close" onclick="closeReviewModal()">&times;</span>
+            </div>
+            <div id="reviewContent" class="reason-box">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Details Modal -->
+    <div class="modal" id="detailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Leave Details</h2>
+                <span class="close" onclick="closeDetailsModal()">&times;</span>
+            </div>
+            <div id="detailsContent">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function filterLeaves() {
+            const status = document.getElementById('statusFilter').value;
+            const type = document.getElementById('typeFilter').value;
+            const year = document.getElementById('yearFilter').value;
+            
+            let url = window.location.pathname + '?';
+            if (status) url += `status=${status}&`;
+            if (type) url += `type=${type}&`;
+            if (year) url += `year=${year}&`;
+            
+            window.location.href = url;
+        }
+
+        function applyFilters() {
+            filterLeaves();
+        }
+
+        function resetFilters() {
+            window.location.href = window.location.pathname;
+        }
+
+        function viewReason(id) {
+            fetch(`/admin/leaves/${id}/detail/`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('reasonContent').innerHTML = `
+                        <p style="margin-bottom: 10px;"><strong>Reason:</strong></p>
+                        <p>${data.reason}</p>
+                        ${data.notes ? `<p style="margin-top: 10px;"><strong>Notes:</strong> ${data.notes}</p>` : ''}
+                    `;
+                    document.getElementById('reasonModal').classList.add('active');
+                });
+        }
+
+        function viewReview(id) {
+            fetch(`/admin/leaves/${id}/detail/`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('reviewContent').innerHTML = `
+                        <p><strong>Reviewed by:</strong> ${data.approved_by || 'N/A'}</p>
+                        <p><strong>Reviewed on:</strong> ${data.approved_at || 'N/A'}</p>
+                        <p style="margin-top: 10px;"><strong>Comments:</strong></p>
+                        <p>${data.remarks || data.review_notes || 'No comments'}</p>
+                    `;
+                    document.getElementById('reviewModal').classList.add('active');
+                });
+        }
+
+        function viewDetails(id) {
+            fetch(`/admin/leaves/${id}/detail/`)
+                .then(response => response.json())
+                .then(data => {
+                    let html = `
+                        <div class="detail-item">
+                            <span class="detail-label">Leave Type:</span>
+                            <span class="detail-value">${data.leave_type}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Duration:</span>
+                            <span class="detail-value">${data.start_date} to ${data.end_date}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Days:</span>
+                            <span class="detail-value">${data.days} days</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Applied On:</span>
+                            <span class="detail-value">${data.applied_on}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Status:</span>
+                            <span class="detail-value"><span class="status-badge status-${data.status}">${data.status.toUpperCase()}</span></span>
+                        </div>
+                        <div class="reason-box">
+                            <strong>Reason:</strong>
+                            <p style="margin-top: 8px;">${data.reason}</p>
+                        </div>
+                    `;
+                    
+                    if (data.notes) {
+                        html += `
+                            <div class="reason-box">
+                                <strong>Notes:</strong>
+                                <p style="margin-top: 8px;">${data.notes}</p>
+                            </div>
+                        `;
+                    }
+                    
+                    if (data.remarks) {
+                        html += `
+                            <div class="reason-box">
+                                <strong>Review Comments:</strong>
+                                <p style="margin-top: 8px;">${data.remarks}</p>
+                                <p style="margin-top: 5px; font-size: 11px;">By: ${data.approved_by || 'N/A'} on ${data.approved_at || 'N/A'}</p>
+                            </div>
+                        `;
+                    }
+                    
+                    document.getElementById('detailsContent').innerHTML = html;
+                    document.getElementById('detailsModal').classList.add('active');
+                });
+        }
+
+        function closeReasonModal() {
+            document.getElementById('reasonModal').classList.remove('active');
+        }
+
+        function closeReviewModal() {
+            document.getElementById('reviewModal').classList.remove('active');
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('detailsModal').classList.remove('active');
+        }
+
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                closeReasonModal();
+                closeReviewModal();
+                closeDetailsModal();
+            }
+        });
+    </script>
+</body>
+</html>

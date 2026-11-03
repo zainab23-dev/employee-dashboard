@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management | Admin</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: #f1f5f9;
+        }
+        .dashboard-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        .admin-sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            padding: 24px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+        }
+        .top-bar {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .page-title h1 {
+            font-size: 24px;
+            color: #1e293b;
+        }
+        .page-title p {
+            color: #64748b;
+            font-size: 14px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2563eb;
+        }
+        .stat-label {
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+        .filter-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .filter-select {
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            min-width: 150px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .task-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid;
+        }
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .task-id {
+            font-size: 12px;
+            color: #64748b;
+        }
+        .priority-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .priority-high { background: #fee2e2; color: #991b1b; }
+        .priority-medium { background: #fef3c7; color: #92400e; }
+        .priority-low { background: #dbeafe; color: #1e40af; }
+        .priority-urgent { background: #ef4444; color: white; }
+        .task-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .task-meta {
+            font-size: 12px;
+            color: #64748b;
+            margin: 5px 0;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #2563eb;
+            border-radius: 3px;
+        }
+        .task-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+        .employee-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .employee-avatar {
+            width: 30px;
+            height: 30px;
+            background: #2563eb;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        {% include 'admin_sidebar.html' %}
+        
+        <main class="admin-main">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Task Management</h1>
+                    <p>Create, assign and track tasks</p>
+                </div>
+                <button class="btn btn-primary" onclick="openCreateModal()">
+                    <i class="fas fa-plus"></i> New Task
+                </button>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">{{ total_tasks }}</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ pending_tasks }}</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ in_progress_tasks }}</div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ completed_tasks }}</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: #ef4444;">{{ overdue_tasks }}</div>
+                    <div class="stat-label">Overdue</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters">
+                <form method="get" class="filter-group">
+                    <select name="status" class="filter-select">
+                        <option value="">All Status</option>
+                        <option value="pending" {% if current_status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="in_progress" {% if current_status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                        <option value="completed" {% if current_status == 'completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                    
+                    <select name="priority" class="filter-select">
+                        <option value="">All Priorities</option>
+                        <option value="low" {% if current_priority == 'low' %}selected{% endif %}>Low</option>
+                        <option value="medium" {% if current_priority == 'medium' %}selected{% endif %}>Medium</option>
+                        <option value="high" {% if current_priority == 'high' %}selected{% endif %}>High</option>
+                        <option value="urgent" {% if current_priority == 'urgent' %}selected{% endif %}>Urgent</option>
+                    </select>
+                    
+                    <select name="employee" class="filter-select">
+                        <option value="">All Employees</option>
+                        {% for emp in employees %}
+                        <option value="{{ emp.id }}" {% if current_employee == emp.id|stringformat:"s" %}selected{% endif %}>{{ emp.name }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                </form>
+            </div>
+
+            <!-- Tasks Grid -->
+            <div class="task-grid">
+                {% for task in tasks %}
+                <div class="task-card" style="border-left-color: {% if task.priority == 'urgent' %}#ef4444{% elif task.priority == 'high' %}#f59e0b{% elif task.priority == 'medium' %}#2563eb{% else %}#10b981{% endif %};">
+                    <div class="task-header">
+                        <span class="task-id">{{ task.task_id }}</span>
+                        <span class="priority-badge priority-{{ task.priority }}">{{ task.get_priority_display }}</span>
+                    </div>
+                    
+                    <h3 class="task-title">{{ task.title }}</h3>
+                    <p class="task-meta">{{ task.description|truncatechars:100 }}</p>
+                    
+                    <div class="task-meta">
+                        <i class="fas fa-calendar"></i> Due: {{ task.due_date|date:"M d, Y" }}
+                        {% if task.is_overdue %}
+                        <span style="color: #ef4444;">(Overdue)</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ task.progress_percentage }}%;"></div>
+                    </div>
+                    
+                    <div class="task-footer">
+                        <div class="employee-info">
+                            <div class="employee-avatar">{{ task.assigned_to.name|make_list|first }}{{ task.assigned_to.name|make_list|last }}</div>
+                            <span>{{ task.assigned_to.name }}</span>
+                        </div>
+                        <div>
+                            <a href="{% url 'task_detail' task.id %}" class="btn" style="background: #e2e8f0; padding: 5px 10px;">View</a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div style="grid-column: span 3; text-align: center; padding: 60px;">
+                    <i class="fas fa-tasks fa-3x" style="color: #cbd5e1;"></i>
+                    <p style="margin-top: 10px;">No tasks found</p>
+                </div>
+                {% endfor %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Create Task Modal -->
+    <div class="modal" id="createTaskModal">
+        <div class="modal-content">
+            <h2>Create New Task</h2>
+            <form id="createTaskForm">
+                {% csrf_token %}
+                <div style="margin-bottom: 15px;">
+                    <label>Title *</label>
+                    <input type="text" name="title" required style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label>Description *</label>
+                    <textarea name="description" rows="4" required style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;"></textarea>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label>Assigned To *</label>
+                        <select name="assigned_to" required class="filter-select">
+                            {% for emp in employees %}
+                            <option value="{{ emp.id }}">{{ emp.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label>Category</label>
+                        <select name="category" class="filter-select">
+                            <option value="">None</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label>Priority</label>
+                        <select name="priority" class="filter-select">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label>Due Date *</label>
+                        <input type="date" name="due_date" required class="filter-select">
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label>Estimated Hours</label>
+                    <input type="number" step="0.5" name="estimated_hours" class="filter-select">
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn" style="background: #e2e8f0;" onclick="closeCreateModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openCreateModal() {
+            document.getElementById('createTaskModal').classList.add('active');
+        }
+        
+        function closeCreateModal() {
+            document.getElementById('createTaskModal').classList.remove('active');
+        }
+        
+        document.getElementById('createTaskForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch('{% url "create_task" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ Task created successfully');
+                    location.reload();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
