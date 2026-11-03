@@ -42,8 +42,13 @@ Use these credentials to access the **Employee** dashboard:
 
 | Field | Demo credential |
 | --- | --- |
-| **Username** | `john` |
+| **Employee Username** | `john` |
 | **Password** | `emp123` |
+| **Admin Username** | `admin` |
+| **Password** | `admin123` |
+| **Ceo Username** | `ceo` |
+| **Password** | `ceo123` |
+
 | **Login page** | <https://employee-dashboard-snfl.onrender.com/> |
 | **Employee dashboard** | `/employee/dashboard/` |
 
@@ -79,7 +84,7 @@ The application centralizes these activities and provides a defined approval pro
 | Role | Main responsibilities |
 | --- | --- |
 | **Admin (HR)** | Manages employee information and attendance, assigns tasks, reviews leave requests, manages projects and teams, and prepares payroll for CEO approval. |
-| **CEO** | Provides company-level oversight and approves or rejects payroll submitted by HR. |
+| **CEO** | Provides company-level oversight and approves or rejects decisions |
 | **Employee** | Tracks attendance and breaks, follows assigned tasks, comments on task work, requests leave, and views payslips. |
 
 ### Payroll approval workflow
