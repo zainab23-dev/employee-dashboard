@@ -109,13 +109,12 @@ The following screenshots illustrate the main areas of the application. Image pa
 
 | Employee dashboard | Leave request |
 | --- | --- |
-| ![Employee dashboard](Pictures/emp_dashboard.png) | ![Leave request](Pictures/emp_leave.png) |
+| ![Employee dashboard](Pictures/emp%20dashboard.png) | ![Leave request](Pictures/emp%20leave.png) |
 | **Leave history** | **My tasks** |
-| ![Leave history](Pictures/emp_leave_history.png) | ![My tasks](Pictures/emp_my_task.png) |
+| ![Leave history](Pictures/emp%20leave%20history.png) | ![My tasks](Pictures/emp%20my%20task.png) |
 | **Task detail** | **Project detail** |
-| ![Task detail](Pictures/emp_task_detail_1.png) | ![Project detail](Pictures/emp_project_details.png) |
-| **Projects** | **Payslips** |
-| ![Projects](Pictures/emp_project.png) | ![Payslips](Pictures/emp_pay_slip.png) |
+| ![Task detail](Pictures/emp%20task%20detail.png) | ![Project detail](Pictures/emp%20project%20details.png) |
+
 
 ### HR / Admin dashboard
 
@@ -125,9 +124,9 @@ The following screenshots illustrate the main areas of the application. Image pa
 | **Employee management** | **Leave requests** |
 | ![Employee management](Pictures/Admin%20emp%20management.png) | ![Leave requests](Pictures/Admin%20Leave%20Req.png) |
 | **Payroll management** | **Payroll details** |
-| ![Payroll management](Pictures/payroll_admin_1.png) | ![Payroll details](Pictures/Admin%20Payroll%202.png) |
+| ![Payroll management](Pictures/payroll%20admin.png) | ![Payroll details](Pictures/Admin%20Payroll%202.png) |
 | **Projects** | **Teams** |
-| ![Projects](Pictures/Admin%20Project.png) | ![Teams](Pictures/Admin_Team_1.png) |
+| ![Projects](Pictures/Admin%20Project.png) | ![Teams](/Pictures/Admin%20Team.png) |
 | **Task management** | |
 | ![Task management](Pictures/Admin%20Task.png) | |
 
@@ -135,7 +134,7 @@ The following screenshots illustrate the main areas of the application. Image pa
 
 | CEO payroll dashboard | Leave approval record |
 | --- | --- |
-| ![CEO payroll dashboard](Pictures/ceo_payroll_dashboard_1.png) | ![CEO leave detail](Pictures/ceo_leave_detail.png) |
+| ![CEO payroll dashboard](Pictures/ceo%20payroll%20dashboard.png) | ![CEO leave detail](Pictures/ceo%20leave%20detail.png) |
 
 ## Technology Stack
 
@@ -331,11 +330,6 @@ The application is configured for deployment on Render using `render.yaml` and `
 
 > **File storage note:** Render's free-tier filesystem is ephemeral. Uploaded profile photos, documents, and attachments may be lost when the service is redeployed. Use a persistent disk or an external storage service such as Amazon S3 or Cloudinary when persistent uploads are required.
 
-## Known Limitations
-
-- The chat module between employees and managers is not yet complete.
-- Uploaded files require persistent or external storage for reliable retention across deployments.
-- Automated test coverage for attendance, leave, and payroll workflows is still needed.
 
 ## Future Improvements
 
