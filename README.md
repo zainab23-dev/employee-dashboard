@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Employee Dashboard System
 
 A Django web application for managing employees, attendance, leave, tasks, projects, teams and payroll, with separate admin and employee dashboards.
@@ -99,6 +99,4 @@ media/       User uploads (not tracked by git)
 
 
 
-=======
-# employee-dashboard
->>>>>>> 5fd71fd010ab83e064922432a307dd012ecad47a
+
